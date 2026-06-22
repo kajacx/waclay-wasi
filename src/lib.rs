@@ -1,14 +1,88 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+use waclay::*;
+
+#[allow(unused)]
+mod bindings;
+
+impl ComponentType for bindings::TerminalOutput {
+    fn ty() -> ValueType {
+        todo!()
+    }
+
+    fn from_value(value: &Value) -> anyhow::Result<Self> {
+        todo!()
+    }
+
+    fn into_value(self) -> anyhow::Result<Value> {
+        todo!()
+    }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl ComponentType for bindings::InputStream {
+    fn ty() -> ValueType {
+        todo!()
+    }
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    fn from_value(value: &Value) -> anyhow::Result<Self> {
+        todo!()
+    }
+
+    fn into_value(self) -> anyhow::Result<Value> {
+        todo!()
+    }
+}
+
+impl ComponentType for bindings::Error {
+    fn ty() -> ValueType {
+        todo!()
+    }
+
+    fn from_value(value: &Value) -> anyhow::Result<Self> {
+        todo!()
+    }
+
+    fn into_value(self) -> anyhow::Result<Value> {
+        todo!()
+    }
+}
+
+impl ComponentType for bindings::Pollable {
+    fn ty() -> ValueType {
+        todo!()
+    }
+
+    fn from_value(value: &Value) -> anyhow::Result<Self> {
+        todo!()
+    }
+
+    fn into_value(self) -> anyhow::Result<Value> {
+        todo!()
+    }
+}
+
+impl ComponentType for bindings::OutputStream {
+    fn ty() -> ValueType {
+        todo!()
+    }
+
+    fn from_value(value: &Value) -> anyhow::Result<Self> {
+        todo!()
+    }
+
+    fn into_value(self) -> anyhow::Result<Value> {
+        todo!()
+    }
+}
+
+impl ComponentType for bindings::TerminalInput {
+    fn ty() -> ValueType {
+        todo!()
+    }
+
+    fn from_value(value: &Value) -> anyhow::Result<Self> {
+        todo!()
+    }
+
+    fn into_value(self) -> anyhow::Result<Value> {
+        todo!()
     }
 }
