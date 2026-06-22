@@ -9,16 +9,6 @@ pub use wasi_p2_ctx::*;
 #[allow(unused)]
 mod bindings;
 
-pub fn add_to_linker<S: WasiP2CtxHolder + 'static, E: backend::WasmEngine>(
-    linker: &mut Linker,
-    store: &mut Store<S, E>,
-) -> Result<()> {
-    bindings::imports::register_environment_host(linker, store)?;
-    bindings::imports::register_terminal_output_host(linker, store)?;
-    bindings::imports::register_streams_host(linker, store)?;
-    Ok(())
-}
-
 impl ComponentType for bindings::TerminalOutput {
     fn ty() -> ValueType {
         todo!()
