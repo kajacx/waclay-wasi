@@ -1,5 +1,7 @@
 use waclay::*;
 
+mod bindings;
+
 // The bytes of the component.
 const WASM: &[u8] =
     include_bytes!("../../guest/target/wasm32-wasip2/debug/example_stdio_guest.wasm");
@@ -33,6 +35,8 @@ pub fn main() {
     waclay_wasi::add_to_linker(&mut linker, &mut store).unwrap();
 
     let instance = linker.instantiate(&mut store, &component).unwrap();
+
+    let print_stdout = bindings::exports_funcs::get_print_stdout(&instance, &mut store).unwrap();
 
     // let interface = instance
     //     .exports()
