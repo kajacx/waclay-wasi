@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-waclay = { version = "0.2" }
+# waclay = { version = "0.2" }
+waclay = { path = "../../../../waclay/crates/waclay" }
 wasmi_runtime_layer = { version = "*" }
 waclay-wasi = { path = "../../.." }
