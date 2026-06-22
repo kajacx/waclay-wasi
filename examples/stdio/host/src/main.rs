@@ -38,6 +38,10 @@ pub fn main() {
 
     let print_stdout = bindings::exports_funcs::get_print_stdout(&instance, &mut store).unwrap();
 
+    print_stdout
+        .call(&mut store, "Hello world!".to_string())
+        .unwrap();
+
     // let interface = instance
     //     .exports()
     //     .instance(&"test:guest/foo".try_into().unwrap())
