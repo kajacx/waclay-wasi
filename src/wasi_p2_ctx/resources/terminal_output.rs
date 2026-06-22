@@ -9,16 +9,16 @@ impl WasiP2TerminalOutputResource {
     }
 }
 
-impl ComponentType for WasiP2TerminalOutputResource {
-    fn ty() -> ValueType {
-        todo!()
-    }
+// impl ComponentType for WasiP2TerminalOutputResource {
+//     fn ty() -> ValueType {
+//         todo!()
+//     }
 
-    fn from_value(value: &Value) -> anyhow::Result<Self> {
-        todo!()
-    }
+//     fn from_value(value: &Value) -> anyhow::Result<Self> {
+//         todo!()
+//     }
 
-    fn into_value(self) -> anyhow::Result<Value> {
-        todo!()
-    }
-}
+//     fn into_value(self) -> anyhow::Result<Value> {
+//         todo!()
+//     }
+// }
