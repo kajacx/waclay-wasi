@@ -1,4 +1,4 @@
-use crate::{WasiP2CtxHolder, WasiP2CtxTrait};
+use crate::*;
 
 pub trait WasiP2EnvironmentVars {
     fn get_environment_vars(&mut self) -> Vec<(String, String)>;

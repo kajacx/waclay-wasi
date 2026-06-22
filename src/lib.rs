@@ -14,6 +14,7 @@ pub fn add_to_linker<S: WasiP2CtxHolder + 'static, E: backend::WasmEngine>(
     store: &mut Store<S, E>,
 ) -> Result<()> {
     bindings::imports::register_environment_host(linker, store)?;
+    bindings::imports::register_terminal_output_host(linker, store)?;
     Ok(())
 }
 
