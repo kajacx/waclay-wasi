@@ -71,7 +71,7 @@ impl Pollable {
     /// This helper method creates a ResourceType for use in manual
     /// resource registration. See the documentation above for usage.
     pub fn resource_type() -> ResourceType {
-        ResourceType::new::<Self>(None)
+        ResourceType::new::<Self>(Some(TypeIdentifier::new("Pollable pls", None)))
     }
 }
 
