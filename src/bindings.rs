@@ -3,19 +3,19 @@
 
 #![allow(dead_code, unused_imports, ambiguous_glob_reexports)]
 
+use crate::ResourceConvert;
 use waclay::anyhow::*;
 use waclay::*;
-use wasm_runtime_layer::{backend};
-
+use wasm_runtime_layer::backend;
 
 // ========== Type Definitions ==========
 
 /// Resource type: crate::WasiP2PollableResource
-/// 
+///
 /// This is a host-managed resource. You should define this type
 /// with your actual resource data, then use the manual registration
 /// pattern shown below instead of the generated trait.
-/// 
+///
 /// Example:
 /// ```rust,ignore
 /// #[derive(Debug)]
@@ -23,10 +23,10 @@ use wasm_runtime_layer::{backend};
 ///     // Your resource data here
 ///     value: i32,
 /// }
-/// 
+///
 /// // Manual registration (replaces generated trait):
 /// let resource_ty = ResourceType::new::<crate::WasiP2PollableResource>(None);
-/// 
+///
 /// // Constructor:
 /// interface.define_func("[constructor]pollable",
 ///     Func::new(&mut store,
@@ -42,7 +42,7 @@ use wasm_runtime_layer::{backend};
 ///         }
 ///     )
 /// )?;
-/// 
+///
 /// // Methods:
 /// interface.define_func("[method]pollable.method-name",
 ///     Func::new(&mut store,
@@ -58,7 +58,7 @@ use wasm_runtime_layer::{backend};
 ///     )
 /// )?;
 /// ```
-/// 
+///
 /// See the waclay examples/resource.rs for a complete working example.
 #[derive(Debug)]
 pub struct PollableResource {
@@ -68,7 +68,7 @@ pub struct PollableResource {
 
 impl PollableResource {
     /// Get the ResourceType for this resource.
-    /// 
+    ///
     /// This helper method creates a ResourceType for use in manual
     /// resource registration. See the documentation above for usage.
     pub fn resource_type() -> ResourceType {
@@ -76,13 +76,12 @@ impl PollableResource {
     }
 }
 
-
 /// Resource type: crate::WasiP2ErrorResource
-/// 
+///
 /// This is a host-managed resource. You should define this type
 /// with your actual resource data, then use the manual registration
 /// pattern shown below instead of the generated trait.
-/// 
+///
 /// Example:
 /// ```rust,ignore
 /// #[derive(Debug)]
@@ -90,10 +89,10 @@ impl PollableResource {
 ///     // Your resource data here
 ///     value: i32,
 /// }
-/// 
+///
 /// // Manual registration (replaces generated trait):
 /// let resource_ty = ResourceType::new::<crate::WasiP2ErrorResource>(None);
-/// 
+///
 /// // Constructor:
 /// interface.define_func("[constructor]error",
 ///     Func::new(&mut store,
@@ -109,7 +108,7 @@ impl PollableResource {
 ///         }
 ///     )
 /// )?;
-/// 
+///
 /// // Methods:
 /// interface.define_func("[method]error.method-name",
 ///     Func::new(&mut store,
@@ -125,7 +124,7 @@ impl PollableResource {
 ///     )
 /// )?;
 /// ```
-/// 
+///
 /// See the waclay examples/resource.rs for a complete working example.
 #[derive(Debug)]
 pub struct ErrorResource {
@@ -135,7 +134,7 @@ pub struct ErrorResource {
 
 impl ErrorResource {
     /// Get the ResourceType for this resource.
-    /// 
+    ///
     /// This helper method creates a ResourceType for use in manual
     /// resource registration. See the documentation above for usage.
     pub fn resource_type() -> ResourceType {
@@ -143,15 +142,12 @@ impl ErrorResource {
     }
 }
 
-
-
-
 /// Resource type: crate::WasiP2InputStreamResource
-/// 
+///
 /// This is a host-managed resource. You should define this type
 /// with your actual resource data, then use the manual registration
 /// pattern shown below instead of the generated trait.
-/// 
+///
 /// Example:
 /// ```rust,ignore
 /// #[derive(Debug)]
@@ -159,10 +155,10 @@ impl ErrorResource {
 ///     // Your resource data here
 ///     value: i32,
 /// }
-/// 
+///
 /// // Manual registration (replaces generated trait):
 /// let resource_ty = ResourceType::new::<crate::WasiP2InputStreamResource>(None);
-/// 
+///
 /// // Constructor:
 /// interface.define_func("[constructor]input_stream",
 ///     Func::new(&mut store,
@@ -178,7 +174,7 @@ impl ErrorResource {
 ///         }
 ///     )
 /// )?;
-/// 
+///
 /// // Methods:
 /// interface.define_func("[method]input_stream.method-name",
 ///     Func::new(&mut store,
@@ -194,7 +190,7 @@ impl ErrorResource {
 ///     )
 /// )?;
 /// ```
-/// 
+///
 /// See the waclay examples/resource.rs for a complete working example.
 #[derive(Debug)]
 pub struct InputStreamResource {
@@ -204,7 +200,7 @@ pub struct InputStreamResource {
 
 impl InputStreamResource {
     /// Get the ResourceType for this resource.
-    /// 
+    ///
     /// This helper method creates a ResourceType for use in manual
     /// resource registration. See the documentation above for usage.
     pub fn resource_type() -> ResourceType {
@@ -212,13 +208,12 @@ impl InputStreamResource {
     }
 }
 
-
 /// Resource type: crate::WasiP2OutputStreamResource
-/// 
+///
 /// This is a host-managed resource. You should define this type
 /// with your actual resource data, then use the manual registration
 /// pattern shown below instead of the generated trait.
-/// 
+///
 /// Example:
 /// ```rust,ignore
 /// #[derive(Debug)]
@@ -226,10 +221,10 @@ impl InputStreamResource {
 ///     // Your resource data here
 ///     value: i32,
 /// }
-/// 
+///
 /// // Manual registration (replaces generated trait):
 /// let resource_ty = ResourceType::new::<crate::WasiP2OutputStreamResource>(None);
-/// 
+///
 /// // Constructor:
 /// interface.define_func("[constructor]output_stream",
 ///     Func::new(&mut store,
@@ -245,7 +240,7 @@ impl InputStreamResource {
 ///         }
 ///     )
 /// )?;
-/// 
+///
 /// // Methods:
 /// interface.define_func("[method]output_stream.method-name",
 ///     Func::new(&mut store,
@@ -261,7 +256,7 @@ impl InputStreamResource {
 ///     )
 /// )?;
 /// ```
-/// 
+///
 /// See the waclay examples/resource.rs for a complete working example.
 #[derive(Debug)]
 pub struct OutputStreamResource {
@@ -271,14 +266,13 @@ pub struct OutputStreamResource {
 
 impl OutputStreamResource {
     /// Get the ResourceType for this resource.
-    /// 
+    ///
     /// This helper method creates a ResourceType for use in manual
     /// resource registration. See the documentation above for usage.
     pub fn resource_type() -> ResourceType {
         ResourceType::new::<Self>(None)
     }
 }
-
 
 #[derive(Debug, Clone)]
 pub enum StreamError {
@@ -292,10 +286,14 @@ impl ComponentType for StreamError {
             VariantType::new(
                 None,
                 [
-                    VariantCase::new("last-operation-failed", Some(ValueType::Own(crate::WasiP2ErrorResource::resource_type()))),
+                    VariantCase::new(
+                        "last-operation-failed",
+                        Some(ValueType::Own(crate::WasiP2ErrorResource::resource_type())),
+                    ),
                     VariantCase::new("closed", None),
                 ],
-            ).unwrap(),
+            )
+            .unwrap(),
         )
     }
 
@@ -328,10 +326,14 @@ impl ComponentType for StreamError {
         let variant_type = VariantType::new(
             None,
             [
-                VariantCase::new("last-operation-failed", Some(ValueType::Own(crate::WasiP2ErrorResource::resource_type()))),
+                VariantCase::new(
+                    "last-operation-failed",
+                    Some(ValueType::Own(crate::WasiP2ErrorResource::resource_type())),
+                ),
                 VariantCase::new("closed", None),
             ],
-        ).unwrap();
+        )
+        .unwrap();
 
         let (discriminant, payload) = match self {
             StreamError::LastOperationFailed(val) => (0, Some(val.into_value()?)),
@@ -345,22 +347,12 @@ impl ComponentType for StreamError {
 
 impl UnaryComponentType for StreamError {}
 
-
-
-
-
-
-
-
-
-
-
 /// Resource type: crate::WasiP2TerminalInputResource
-/// 
+///
 /// This is a host-managed resource. You should define this type
 /// with your actual resource data, then use the manual registration
 /// pattern shown below instead of the generated trait.
-/// 
+///
 /// Example:
 /// ```rust,ignore
 /// #[derive(Debug)]
@@ -368,10 +360,10 @@ impl UnaryComponentType for StreamError {}
 ///     // Your resource data here
 ///     value: i32,
 /// }
-/// 
+///
 /// // Manual registration (replaces generated trait):
 /// let resource_ty = ResourceType::new::<crate::WasiP2TerminalInputResource>(None);
-/// 
+///
 /// // Constructor:
 /// interface.define_func("[constructor]terminal_input",
 ///     Func::new(&mut store,
@@ -387,7 +379,7 @@ impl UnaryComponentType for StreamError {}
 ///         }
 ///     )
 /// )?;
-/// 
+///
 /// // Methods:
 /// interface.define_func("[method]terminal_input.method-name",
 ///     Func::new(&mut store,
@@ -403,7 +395,7 @@ impl UnaryComponentType for StreamError {}
 ///     )
 /// )?;
 /// ```
-/// 
+///
 /// See the waclay examples/resource.rs for a complete working example.
 #[derive(Debug)]
 pub struct TerminalInputResource {
@@ -413,7 +405,7 @@ pub struct TerminalInputResource {
 
 impl TerminalInputResource {
     /// Get the ResourceType for this resource.
-    /// 
+    ///
     /// This helper method creates a ResourceType for use in manual
     /// resource registration. See the documentation above for usage.
     pub fn resource_type() -> ResourceType {
@@ -421,13 +413,12 @@ impl TerminalInputResource {
     }
 }
 
-
 /// Resource type: crate::WasiP2TerminalOutputResource
-/// 
+///
 /// This is a host-managed resource. You should define this type
 /// with your actual resource data, then use the manual registration
 /// pattern shown below instead of the generated trait.
-/// 
+///
 /// Example:
 /// ```rust,ignore
 /// #[derive(Debug)]
@@ -435,10 +426,10 @@ impl TerminalInputResource {
 ///     // Your resource data here
 ///     value: i32,
 /// }
-/// 
+///
 /// // Manual registration (replaces generated trait):
 /// let resource_ty = ResourceType::new::<crate::WasiP2TerminalOutputResource>(None);
-/// 
+///
 /// // Constructor:
 /// interface.define_func("[constructor]terminal_output",
 ///     Func::new(&mut store,
@@ -454,7 +445,7 @@ impl TerminalInputResource {
 ///         }
 ///     )
 /// )?;
-/// 
+///
 /// // Methods:
 /// interface.define_func("[method]terminal_output.method-name",
 ///     Func::new(&mut store,
@@ -470,7 +461,7 @@ impl TerminalInputResource {
 ///     )
 /// )?;
 /// ```
-/// 
+///
 /// See the waclay examples/resource.rs for a complete working example.
 #[derive(Debug)]
 pub struct TerminalOutputResource {
@@ -480,20 +471,13 @@ pub struct TerminalOutputResource {
 
 impl TerminalOutputResource {
     /// Get the ResourceType for this resource.
-    /// 
+    ///
     /// This helper method creates a ResourceType for use in manual
     /// resource registration. See the documentation above for usage.
     pub fn resource_type() -> ResourceType {
         ResourceType::new::<Self>(None)
     }
 }
-
-
-
-
-
-
-
 
 // ========== Host Imports ==========
 
@@ -503,17 +487,36 @@ pub trait PollHost {
 }
 
 /// Host trait for interface: wasi:io/error@0.2.6
-pub trait ErrorHost {
-}
+pub trait ErrorHost {}
 
 /// Host trait for interface: wasi:io/streams@0.2.6
 pub trait StreamsHost {
-    fn input_stream_blocking_read(&mut self, self_: crate::WasiP2InputStreamResource, len: u64) -> Result<Vec<u8>, StreamError>;
-    fn input_stream_subscribe(&mut self, self_: crate::WasiP2InputStreamResource) -> crate::WasiP2PollableResource;
-    fn output_stream_check_write(&mut self, self_: crate::WasiP2OutputStreamResource) -> Result<u64, StreamError>;
-    fn output_stream_write(&mut self, self_: crate::WasiP2OutputStreamResource, contents: Vec<u8>) -> Result<(), StreamError>;
-    fn output_stream_blocking_flush(&mut self, self_: crate::WasiP2OutputStreamResource) -> Result<(), StreamError>;
-    fn output_stream_subscribe(&mut self, self_: crate::WasiP2OutputStreamResource) -> crate::WasiP2PollableResource;
+    fn input_stream_blocking_read(
+        &mut self,
+        self_: crate::WasiP2InputStreamResource,
+        len: u64,
+    ) -> Result<Vec<u8>, StreamError>;
+    fn input_stream_subscribe(
+        &mut self,
+        self_: crate::WasiP2InputStreamResource,
+    ) -> crate::WasiP2PollableResource;
+    fn output_stream_check_write(
+        &mut self,
+        self_: crate::WasiP2OutputStreamResource,
+    ) -> Result<u64, StreamError>;
+    fn output_stream_write(
+        &mut self,
+        self_: crate::WasiP2OutputStreamResource,
+        contents: Vec<u8>,
+    ) -> Result<(), StreamError>;
+    fn output_stream_blocking_flush(
+        &mut self,
+        self_: crate::WasiP2OutputStreamResource,
+    ) -> Result<(), StreamError>;
+    fn output_stream_subscribe(
+        &mut self,
+        self_: crate::WasiP2OutputStreamResource,
+    ) -> crate::WasiP2PollableResource;
 }
 
 /// Host trait for interface: wasi:cli/environment@0.2.6
@@ -542,12 +545,10 @@ pub trait StderrHost {
 }
 
 /// Host trait for interface: wasi:cli/terminal-input@0.2.6
-pub trait TerminalInputHost {
-}
+pub trait TerminalInputHost {}
 
 /// Host trait for interface: wasi:cli/terminal-output@0.2.6
-pub trait TerminalOutputHost {
-}
+pub trait TerminalOutputHost {}
 
 /// Host trait for interface: wasi:cli/terminal-stdin@0.2.6
 pub trait TerminalStdinHost {
@@ -567,11 +568,10 @@ pub trait TerminalStderrHost {
 pub mod imports {
     use super::*;
 
-
     // NOTE: This interface contains resources which require manual
     // implementation. See the generated resource type documentation
     // for the correct registration pattern.
-    // 
+    //
     // The generated trait below will not compile correctly for resource
     // methods. Use the manual registration pattern shown in the
     // resource type documentation instead.
@@ -585,10 +585,7 @@ pub mod imports {
 
         // Register resource: pollable
         host_interface
-            .define_resource(
-                "pollable",
-                crate::WasiP2PollableResource::resource_type(),
-            )
+            .define_resource("pollable", crate::WasiP2PollableResource::resource_type())
             .context("Failed to define resource pollable")?;
 
         host_interface
@@ -597,7 +594,9 @@ pub mod imports {
                 Func::new(
                     &mut *store,
                     FuncType::new(
-                        [ValueType::Borrow(crate::WasiP2PollableResource::resource_type()), ],
+                        [ValueType::Borrow(
+                            crate::WasiP2PollableResource::resource_type(),
+                        )],
                         [],
                     ),
                     |mut ctx, params, _results| {
@@ -612,11 +611,10 @@ pub mod imports {
         Ok(())
     }
 
-
     // NOTE: This interface contains resources which require manual
     // implementation. See the generated resource type documentation
     // for the correct registration pattern.
-    // 
+    //
     // The generated trait below will not compile correctly for resource
     // methods. Use the manual registration pattern shown in the
     // resource type documentation instead.
@@ -630,20 +628,16 @@ pub mod imports {
 
         // Register resource: error
         host_interface
-            .define_resource(
-                "error",
-                crate::WasiP2ErrorResource::resource_type(),
-            )
+            .define_resource("error", crate::WasiP2ErrorResource::resource_type())
             .context("Failed to define resource error")?;
 
         Ok(())
     }
 
-
     // NOTE: This interface contains resources which require manual
     // implementation. See the generated resource type documentation
     // for the correct registration pattern.
-    // 
+    //
     // The generated trait below will not compile correctly for resource
     // methods. Use the manual registration pattern shown in the
     // resource type documentation instead.
@@ -677,14 +671,24 @@ pub mod imports {
                 Func::new(
                     &mut *store,
                     FuncType::new(
-                        [ValueType::Borrow(crate::WasiP2InputStreamResource::resource_type()), ValueType::U64, ],
-                        [ValueType::Result(ResultType::new(Some(ValueType::List(ListType::new(ValueType::U8))), Some(StreamError::ty())))],
+                        [
+                            ValueType::Borrow(crate::WasiP2InputStreamResource::resource_type()),
+                            ValueType::U64,
+                        ],
+                        [ValueType::Result(ResultType::new(
+                            Some(ValueType::List(ListType::new(ValueType::U8))),
+                            Some(StreamError::ty()),
+                        ))],
                     ),
                     |mut ctx, params, results| {
                         let self_ = crate::WasiP2InputStreamResource::from_value(&params[0])?;
-                        let len = if let Value::U64(x) = &params[1] { *x } else { bail!("Expected u64") };
+                        let len = if let Value::U64(x) = &params[1] {
+                            *x
+                        } else {
+                            bail!("Expected u64")
+                        };
                         let result = ctx.data_mut().input_stream_blocking_read(self_, len);
-                        results[0] = result.into_value()?;
+                        results[0] = result.to_value(ctx)?;
                         Ok(())
                     },
                 ),
@@ -697,13 +701,17 @@ pub mod imports {
                 Func::new(
                     &mut *store,
                     FuncType::new(
-                        [ValueType::Borrow(crate::WasiP2InputStreamResource::resource_type()), ],
-                        [ValueType::Own(crate::WasiP2PollableResource::resource_type())],
+                        [ValueType::Borrow(
+                            crate::WasiP2InputStreamResource::resource_type(),
+                        )],
+                        [ValueType::Own(
+                            crate::WasiP2PollableResource::resource_type(),
+                        )],
                     ),
                     |mut ctx, params, results| {
                         let self_ = crate::WasiP2InputStreamResource::from_value(&params[0])?;
                         let result = ctx.data_mut().input_stream_subscribe(self_);
-                        results[0] = result.into_value()?;
+                        results[0] = result.to_value(ctx)?;
                         Ok(())
                     },
                 ),
@@ -716,13 +724,18 @@ pub mod imports {
                 Func::new(
                     &mut *store,
                     FuncType::new(
-                        [ValueType::Borrow(crate::WasiP2OutputStreamResource::resource_type()), ],
-                        [ValueType::Result(ResultType::new(Some(ValueType::U64), Some(StreamError::ty())))],
+                        [ValueType::Borrow(
+                            crate::WasiP2OutputStreamResource::resource_type(),
+                        )],
+                        [ValueType::Result(ResultType::new(
+                            Some(ValueType::U64),
+                            Some(StreamError::ty()),
+                        ))],
                     ),
                     |mut ctx, params, results| {
                         let self_ = crate::WasiP2OutputStreamResource::from_value(&params[0])?;
                         let result = ctx.data_mut().output_stream_check_write(self_);
-                        results[0] = result.into_value()?;
+                        results[0] = result.to_value(ctx)?;
                         Ok(())
                     },
                 ),
@@ -735,14 +748,20 @@ pub mod imports {
                 Func::new(
                     &mut *store,
                     FuncType::new(
-                        [ValueType::Borrow(crate::WasiP2OutputStreamResource::resource_type()), ValueType::List(ListType::new(ValueType::U8)), ],
-                        [ValueType::Result(ResultType::new(None, Some(StreamError::ty())))],
+                        [
+                            ValueType::Borrow(crate::WasiP2OutputStreamResource::resource_type()),
+                            ValueType::List(ListType::new(ValueType::U8)),
+                        ],
+                        [ValueType::Result(ResultType::new(
+                            None,
+                            Some(StreamError::ty()),
+                        ))],
                     ),
                     |mut ctx, params, results| {
                         let self_ = crate::WasiP2OutputStreamResource::from_value(&params[0])?;
                         let contents = Vec::<u8>::from_value(&params[1])?;
                         let result = ctx.data_mut().output_stream_write(self_, contents);
-                        results[0] = result.into_value()?;
+                        results[0] = result.to_value(ctx)?;
                         Ok(())
                     },
                 ),
@@ -755,13 +774,18 @@ pub mod imports {
                 Func::new(
                     &mut *store,
                     FuncType::new(
-                        [ValueType::Borrow(crate::WasiP2OutputStreamResource::resource_type()), ],
-                        [ValueType::Result(ResultType::new(None, Some(StreamError::ty())))],
+                        [ValueType::Borrow(
+                            crate::WasiP2OutputStreamResource::resource_type(),
+                        )],
+                        [ValueType::Result(ResultType::new(
+                            None,
+                            Some(StreamError::ty()),
+                        ))],
                     ),
                     |mut ctx, params, results| {
                         let self_ = crate::WasiP2OutputStreamResource::from_value(&params[0])?;
                         let result = ctx.data_mut().output_stream_blocking_flush(self_);
-                        results[0] = result.into_value()?;
+                        results[0] = result.to_value(ctx)?;
                         Ok(())
                     },
                 ),
@@ -774,13 +798,17 @@ pub mod imports {
                 Func::new(
                     &mut *store,
                     FuncType::new(
-                        [ValueType::Borrow(crate::WasiP2OutputStreamResource::resource_type()), ],
-                        [ValueType::Own(crate::WasiP2PollableResource::resource_type())],
+                        [ValueType::Borrow(
+                            crate::WasiP2OutputStreamResource::resource_type(),
+                        )],
+                        [ValueType::Own(
+                            crate::WasiP2PollableResource::resource_type(),
+                        )],
                     ),
                     |mut ctx, params, results| {
                         let self_ = crate::WasiP2OutputStreamResource::from_value(&params[0])?;
                         let result = ctx.data_mut().output_stream_subscribe(self_);
-                        results[0] = result.into_value()?;
+                        results[0] = result.to_value(ctx)?;
                         Ok(())
                     },
                 ),
@@ -805,11 +833,13 @@ pub mod imports {
                     &mut *store,
                     FuncType::new(
                         [],
-                        [ValueType::List(ListType::new(ValueType::Tuple(TupleType::new(None, [ValueType::String, ValueType::String]))))],
+                        [ValueType::List(ListType::new(ValueType::Tuple(
+                            TupleType::new(None, [ValueType::String, ValueType::String]),
+                        )))],
                     ),
                     |mut ctx, params, results| {
                         let result = ctx.data_mut().get_environment();
-                        results[0] = result.into_value()?;
+                        results[0] = result.to_value(ctx)?;
                         Ok(())
                     },
                 ),
@@ -832,10 +862,7 @@ pub mod imports {
                 "exit",
                 Func::new(
                     &mut *store,
-                    FuncType::new(
-                        [ValueType::Result(ResultType::new(None, None)), ],
-                        [],
-                    ),
+                    FuncType::new([ValueType::Result(ResultType::new(None, None))], []),
                     |mut ctx, params, _results| {
                         let status = Result::<(), ()>::from_value(&params[0])?;
                         ctx.data_mut().exit(status);
@@ -863,11 +890,13 @@ pub mod imports {
                     &mut *store,
                     FuncType::new(
                         [],
-                        [ValueType::Own(crate::WasiP2InputStreamResource::resource_type())],
+                        [ValueType::Own(
+                            crate::WasiP2InputStreamResource::resource_type(),
+                        )],
                     ),
                     |mut ctx, params, results| {
                         let result = ctx.data_mut().get_stdin();
-                        results[0] = result.into_value()?;
+                        results[0] = result.to_value(ctx)?;
                         Ok(())
                     },
                 ),
@@ -892,11 +921,13 @@ pub mod imports {
                     &mut *store,
                     FuncType::new(
                         [],
-                        [ValueType::Own(crate::WasiP2OutputStreamResource::resource_type())],
+                        [ValueType::Own(
+                            crate::WasiP2OutputStreamResource::resource_type(),
+                        )],
                     ),
                     |mut ctx, params, results| {
                         let result = ctx.data_mut().get_stdout();
-                        results[0] = result.into_value()?;
+                        results[0] = result.to_value(ctx)?;
                         Ok(())
                     },
                 ),
@@ -921,11 +952,13 @@ pub mod imports {
                     &mut *store,
                     FuncType::new(
                         [],
-                        [ValueType::Own(crate::WasiP2OutputStreamResource::resource_type())],
+                        [ValueType::Own(
+                            crate::WasiP2OutputStreamResource::resource_type(),
+                        )],
                     ),
                     |mut ctx, params, results| {
                         let result = ctx.data_mut().get_stderr();
-                        results[0] = result.into_value()?;
+                        results[0] = result.to_value(ctx)?;
                         Ok(())
                     },
                 ),
@@ -935,11 +968,10 @@ pub mod imports {
         Ok(())
     }
 
-
     // NOTE: This interface contains resources which require manual
     // implementation. See the generated resource type documentation
     // for the correct registration pattern.
-    // 
+    //
     // The generated trait below will not compile correctly for resource
     // methods. Use the manual registration pattern shown in the
     // resource type documentation instead.
@@ -962,15 +994,17 @@ pub mod imports {
         Ok(())
     }
 
-
     // NOTE: This interface contains resources which require manual
     // implementation. See the generated resource type documentation
     // for the correct registration pattern.
-    // 
+    //
     // The generated trait below will not compile correctly for resource
     // methods. Use the manual registration pattern shown in the
     // resource type documentation instead.
-    pub fn register_terminal_output_host<T: TerminalOutputHost + 'static, E: backend::WasmEngine>(
+    pub fn register_terminal_output_host<
+        T: TerminalOutputHost + 'static,
+        E: backend::WasmEngine,
+    >(
         linker: &mut Linker,
         _store: &mut Store<T, E>,
     ) -> Result<()> {
@@ -1004,11 +1038,13 @@ pub mod imports {
                     &mut *store,
                     FuncType::new(
                         [],
-                        [ValueType::Option(OptionType::new(ValueType::Own(crate::WasiP2TerminalInputResource::resource_type())))],
+                        [ValueType::Option(OptionType::new(ValueType::Own(
+                            crate::WasiP2TerminalInputResource::resource_type(),
+                        )))],
                     ),
                     |mut ctx, params, results| {
                         let result = ctx.data_mut().get_terminal_stdin();
-                        results[0] = result.into_value()?;
+                        results[0] = result.to_value(ctx)?;
                         Ok(())
                     },
                 ),
@@ -1018,7 +1054,10 @@ pub mod imports {
         Ok(())
     }
 
-    pub fn register_terminal_stdout_host<T: TerminalStdoutHost + 'static, E: backend::WasmEngine>(
+    pub fn register_terminal_stdout_host<
+        T: TerminalStdoutHost + 'static,
+        E: backend::WasmEngine,
+    >(
         linker: &mut Linker,
         store: &mut Store<T, E>,
     ) -> Result<()> {
@@ -1033,11 +1072,13 @@ pub mod imports {
                     &mut *store,
                     FuncType::new(
                         [],
-                        [ValueType::Option(OptionType::new(ValueType::Own(crate::WasiP2TerminalOutputResource::resource_type())))],
+                        [ValueType::Option(OptionType::new(ValueType::Own(
+                            crate::WasiP2TerminalOutputResource::resource_type(),
+                        )))],
                     ),
                     |mut ctx, params, results| {
                         let result = ctx.data_mut().get_terminal_stdout();
-                        results[0] = result.into_value()?;
+                        results[0] = result.to_value(ctx)?;
                         Ok(())
                     },
                 ),
@@ -1047,7 +1088,10 @@ pub mod imports {
         Ok(())
     }
 
-    pub fn register_terminal_stderr_host<T: TerminalStderrHost + 'static, E: backend::WasmEngine>(
+    pub fn register_terminal_stderr_host<
+        T: TerminalStderrHost + 'static,
+        E: backend::WasmEngine,
+    >(
         linker: &mut Linker,
         store: &mut Store<T, E>,
     ) -> Result<()> {
@@ -1062,11 +1106,13 @@ pub mod imports {
                     &mut *store,
                     FuncType::new(
                         [],
-                        [ValueType::Option(OptionType::new(ValueType::Own(crate::WasiP2TerminalOutputResource::resource_type())))],
+                        [ValueType::Option(OptionType::new(ValueType::Own(
+                            crate::WasiP2TerminalOutputResource::resource_type(),
+                        )))],
                     ),
                     |mut ctx, params, results| {
                         let result = ctx.data_mut().get_terminal_stderr();
-                        results[0] = result.into_value()?;
+                        results[0] = result.to_value(ctx)?;
                         Ok(())
                     },
                 ),
@@ -1075,6 +1121,4 @@ pub mod imports {
 
         Ok(())
     }
-
 }
-
