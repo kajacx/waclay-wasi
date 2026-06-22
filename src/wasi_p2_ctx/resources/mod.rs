@@ -1,6 +1,13 @@
+mod error;
+mod input_stream;
+mod output_stream;
 mod pollable;
-pub use pollable::*;
+mod terminal_input;
+mod terminal_output;
 
-pub trait WasiP2Resources {
-    type Pollable: WasiP2Pollable;
-}
+pub use error::*;
+pub use input_stream::*;
+pub use output_stream::*;
+pub use pollable::*;
+pub use terminal_input::*;
+pub use terminal_output::*;

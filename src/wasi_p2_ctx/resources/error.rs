@@ -1,15 +1,15 @@
 use crate::*;
 
 #[derive(Debug, Clone)]
-pub struct WasiP2PollableResource {}
+pub struct WasiP2ErrorResource {}
 
-impl WasiP2PollableResource {
+impl WasiP2ErrorResource {
     pub fn resource_type() -> ResourceType {
         todo!()
     }
 }
 
-impl ComponentType for WasiP2PollableResource {
+impl ComponentType for WasiP2ErrorResource {
     fn ty() -> ValueType {
         todo!()
     }
