@@ -1,0 +1,11 @@
+package waclay-wasi:examples@0.1.0;
+
+interface funcs {
+    print-stdout: func(text: string);
+    print-stderr: func(text: string);
+    read-stdin: func() -> string;
+}
+
+world stdio {
+    export funcs;
+}
