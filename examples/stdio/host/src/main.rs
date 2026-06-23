@@ -42,6 +42,12 @@ pub fn main() {
         .call(&mut store, "Hello world!".to_string())
         .unwrap();
 
+    let print_stderr = bindings::exports_funcs::get_print_stderr(&instance, &mut store).unwrap();
+
+    print_stderr
+        .call(&mut store, "Goodbye world!".to_string())
+        .unwrap();
+
     // let interface = instance
     //     .exports()
     //     .instance(&"test:guest/foo".try_into().unwrap())
