@@ -15,10 +15,7 @@ mod terminal_stdin;
 mod terminal_stdout;
 
 pub use environment_vars::*;
-// pub use error::*;
-// pub use streams::*;
-// pub use terminal_input::*;
-// pub use terminal_output::*;
+pub use streams::*;
 
 pub fn add_to_linker<S: WasiP2CtxHolder + 'static, E: wasm_runtime_layer::backend::WasmEngine>(
     linker: &mut Linker,
