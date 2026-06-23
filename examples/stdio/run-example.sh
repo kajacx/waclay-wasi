@@ -14,5 +14,6 @@ wasm-tools component wit guest/target/wasm32-wasip2/debug/example_stdio_guest.wa
 wit-bindgen-wcl ./stdio.wit ./host/src/bindings.rs
 
 cd host
-cargo run
+echo 'hello
+world' | cargo run
 cd ..

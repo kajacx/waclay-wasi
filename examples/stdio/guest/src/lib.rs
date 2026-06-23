@@ -27,6 +27,6 @@ impl bindings::exports::waclay_wasi::examples::funcs::Guest for GuestComponent {
         stdin
             .read_line(&mut buffer)
             .expect("read line from stdin inside of the Rust guest");
-        buffer
+        buffer.trim_end().to_string()
     }
 }

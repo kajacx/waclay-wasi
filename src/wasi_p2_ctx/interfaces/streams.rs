@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::io::{Read, Write};
 
 use crate::*;
 
@@ -6,9 +6,20 @@ impl<T: WasiP2CtxHolder> crate::bindings::StreamsHost for T {
     fn input_stream_blocking_read(
         &mut self,
         _self_: WasiP2InputStreamResource,
-        _len: u64,
+        len: u64,
     ) -> Result<Vec<u8>, bindings::StreamError> {
-        todo!()
+        let mut bytes = vec![0u8; len as usize];
+        let result = std::io::stdin().read(&mut bytes);
+        match result {
+            Ok(bytes_read) => {
+                bytes.truncate(bytes_read);
+                Ok(bytes)
+            }
+            Err(error) => {
+                eprintln!("Read stdio failed: {error:?}");
+                Err(bindings::StreamError::Closed)
+            }
+        }
     }
 
     fn input_stream_subscribe(
