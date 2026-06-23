@@ -9,26 +9,18 @@ static RESOURCE_TYPE: LazyLock<ResourceType> = LazyLock::new(|| {
     ResourceType::new::<WasiP2ErrorResource>(Some(TypeIdentifier::new("WasiP2ErrorResource", None)))
 });
 
-// static VALUE_TYPE: LazyLock<Re>  = LazyLock::new(|| {
-//     ValueType::
-// })
-
 impl WasiP2ErrorResource {
     pub fn resource_type() -> ResourceType {
         RESOURCE_TYPE.clone()
     }
 }
 
-impl ResourceConvert for WasiP2ErrorResource {
-    fn ty_own() -> ValueType {
+impl ComponentType for WasiP2ErrorResource {
+    fn ty() -> ValueType {
         ValueType::Own(RESOURCE_TYPE.clone())
     }
 
-    fn ty_borrow() -> ValueType {
-        ValueType::Borrow(RESOURCE_TYPE.clone())
-    }
-
-    fn from_value(ctx: impl AsContext, value: Value) -> anyhow::Result<Self> {
+    fn from_value(value: &Value, ctx: impl AsContext) -> anyhow::Result<Self> {
         match value {
             Value::Own(own) => Ok(own.rep::<Self, _, _>(&ctx.as_context())?.clone()),
             Value::Borrow(borrow) => Ok(borrow.rep::<Self, _, _>(&ctx.as_context())?.clone()),
@@ -38,7 +30,7 @@ impl ResourceConvert for WasiP2ErrorResource {
         }
     }
 
-    fn to_value(self, ctx: impl AsContextMut) -> anyhow::Result<Value> {
+    fn into_value(self, ctx: impl AsContextMut) -> anyhow::Result<Value> {
         Ok(Value::Own(ResourceOwn::new(
             ctx,
             self,

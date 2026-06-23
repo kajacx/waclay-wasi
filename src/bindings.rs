@@ -3,8 +3,7 @@
 
 #![allow(dead_code, unused_imports, ambiguous_glob_reexports)]
 
-use crate::ResourceConvert;
-use waclay::anyhow::*;
+use anyhow::*;
 use waclay::*;
 use wasm_runtime_layer::backend;
 
@@ -297,7 +296,7 @@ impl ComponentType for StreamError {
         )
     }
 
-    fn from_value(value: &Value) -> Result<Self> {
+    fn from_value(value: &Value, #[allow(unused)] ctx: impl AsContext) -> Result<Self> {
         if let Value::Variant(variant) = value {
             let discriminant = variant.discriminant();
             let variant_ty = variant.ty();
@@ -308,7 +307,7 @@ impl ComponentType for StreamError {
             match case_name {
                 "last-operation-failed" => {
                     if let Some(payload_value) = payload {
-                        let converted = crate::WasiP2ErrorResource::from_value(&payload_value)?;
+                        let converted = crate::WasiP2ErrorResource::from_value(&payload_value, ctx.as_context())?;
                         Ok(StreamError::LastOperationFailed(converted))
                     } else {
                         bail!("Expected payload for last-operation-failed case")
@@ -322,7 +321,7 @@ impl ComponentType for StreamError {
         }
     }
 
-    fn into_value(self) -> Result<Value> {
+    fn into_value(self, #[allow(unused)] mut ctx: impl AsContextMut) -> Result<Value> {
         let variant_type = VariantType::new(
             None,
             [
@@ -336,7 +335,9 @@ impl ComponentType for StreamError {
         .unwrap();
 
         let (discriminant, payload) = match self {
-            StreamError::LastOperationFailed(val) => (0, Some(val.into_value()?)),
+            StreamError::LastOperationFailed(val) => {
+                (0, Some(val.into_value(ctx.as_context_mut())?))
+            }
             StreamError::Closed => (1, None),
         };
 
@@ -496,27 +497,15 @@ pub trait StreamsHost {
         self_: crate::WasiP2InputStreamResource,
         len: u64,
     ) -> Result<Vec<u8>, StreamError>;
-    fn input_stream_subscribe(
-        &mut self,
-        self_: crate::WasiP2InputStreamResource,
-    ) -> crate::WasiP2PollableResource;
-    fn output_stream_check_write(
-        &mut self,
-        self_: crate::WasiP2OutputStreamResource,
-    ) -> Result<u64, StreamError>;
+    fn input_stream_subscribe(&mut self, self_: crate::WasiP2InputStreamResource) -> crate::WasiP2PollableResource;
+    fn output_stream_check_write(&mut self, self_: crate::WasiP2OutputStreamResource) -> Result<u64, StreamError>;
     fn output_stream_write(
         &mut self,
         self_: crate::WasiP2OutputStreamResource,
         contents: Vec<u8>,
     ) -> Result<(), StreamError>;
-    fn output_stream_blocking_flush(
-        &mut self,
-        self_: crate::WasiP2OutputStreamResource,
-    ) -> Result<(), StreamError>;
-    fn output_stream_subscribe(
-        &mut self,
-        self_: crate::WasiP2OutputStreamResource,
-    ) -> crate::WasiP2PollableResource;
+    fn output_stream_blocking_flush(&mut self, self_: crate::WasiP2OutputStreamResource) -> Result<(), StreamError>;
+    fn output_stream_subscribe(&mut self, self_: crate::WasiP2OutputStreamResource) -> crate::WasiP2PollableResource;
 }
 
 /// Host trait for interface: wasi:cli/environment@0.2.6
@@ -593,14 +582,9 @@ pub mod imports {
                 "[method]pollable.block",
                 Func::new(
                     &mut *store,
-                    FuncType::new(
-                        [ValueType::Borrow(
-                            crate::WasiP2PollableResource::resource_type(),
-                        )],
-                        [],
-                    ),
+                    FuncType::new([ValueType::Borrow(crate::WasiP2PollableResource::resource_type())], []),
                     |mut ctx, params, _results| {
-                        let self_ = crate::WasiP2PollableResource::from_value(&params[0])?;
+                        let self_ = crate::WasiP2PollableResource::from_value(&params[0], ctx.as_context())?;
                         ctx.data_mut().pollable_block(self_);
                         Ok(())
                     },
@@ -620,7 +604,7 @@ pub mod imports {
     // resource type documentation instead.
     pub fn register_error_host<T: ErrorHost + 'static, E: backend::WasmEngine>(
         linker: &mut Linker,
-        _store: &mut Store<T, E>,
+        store: &mut Store<T, E>,
     ) -> Result<()> {
         let host_interface = linker
             .define_instance("wasi:io/error@0.2.6".try_into().unwrap())
@@ -651,18 +635,12 @@ pub mod imports {
 
         // Register resource: input-stream
         host_interface
-            .define_resource(
-                "input-stream",
-                crate::WasiP2InputStreamResource::resource_type(),
-            )
+            .define_resource("input-stream", crate::WasiP2InputStreamResource::resource_type())
             .context("Failed to define resource input-stream")?;
 
         // Register resource: output-stream
         host_interface
-            .define_resource(
-                "output-stream",
-                crate::WasiP2OutputStreamResource::resource_type(),
-            )
+            .define_resource("output-stream", crate::WasiP2OutputStreamResource::resource_type())
             .context("Failed to define resource output-stream")?;
 
         host_interface
@@ -681,14 +659,14 @@ pub mod imports {
                         ))],
                     ),
                     |mut ctx, params, results| {
-                        let self_ = crate::WasiP2InputStreamResource::from_value(&params[0])?;
+                        let self_ = crate::WasiP2InputStreamResource::from_value(&params[0], ctx.as_context())?;
                         let len = if let Value::U64(x) = &params[1] {
                             *x
                         } else {
                             bail!("Expected u64")
                         };
                         let result = ctx.data_mut().input_stream_blocking_read(self_, len);
-                        results[0] = result.to_value(ctx)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
                 ),
@@ -701,17 +679,13 @@ pub mod imports {
                 Func::new(
                     &mut *store,
                     FuncType::new(
-                        [ValueType::Borrow(
-                            crate::WasiP2InputStreamResource::resource_type(),
-                        )],
-                        [ValueType::Own(
-                            crate::WasiP2PollableResource::resource_type(),
-                        )],
+                        [ValueType::Borrow(crate::WasiP2InputStreamResource::resource_type())],
+                        [ValueType::Own(crate::WasiP2PollableResource::resource_type())],
                     ),
                     |mut ctx, params, results| {
-                        let self_ = crate::WasiP2InputStreamResource::from_value(&params[0])?;
+                        let self_ = crate::WasiP2InputStreamResource::from_value(&params[0], ctx.as_context())?;
                         let result = ctx.data_mut().input_stream_subscribe(self_);
-                        results[0] = result.to_value(ctx)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
                 ),
@@ -724,18 +698,16 @@ pub mod imports {
                 Func::new(
                     &mut *store,
                     FuncType::new(
-                        [ValueType::Borrow(
-                            crate::WasiP2OutputStreamResource::resource_type(),
-                        )],
+                        [ValueType::Borrow(crate::WasiP2OutputStreamResource::resource_type())],
                         [ValueType::Result(ResultType::new(
                             Some(ValueType::U64),
                             Some(StreamError::ty()),
                         ))],
                     ),
                     |mut ctx, params, results| {
-                        let self_ = crate::WasiP2OutputStreamResource::from_value(&params[0])?;
+                        let self_ = crate::WasiP2OutputStreamResource::from_value(&params[0], ctx.as_context())?;
                         let result = ctx.data_mut().output_stream_check_write(self_);
-                        results[0] = result.to_value(ctx)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
                 ),
@@ -758,10 +730,10 @@ pub mod imports {
                         ))],
                     ),
                     |mut ctx, params, results| {
-                        let self_ = crate::WasiP2OutputStreamResource::from_value(&params[0])?;
-                        let contents = Vec::<u8>::from_value(&params[1])?;
+                        let self_ = crate::WasiP2OutputStreamResource::from_value(&params[0], ctx.as_context())?;
+                        let contents = Vec::<u8>::from_value(&params[1], ctx.as_context())?;
                         let result = ctx.data_mut().output_stream_write(self_, contents);
-                        results[0] = result.to_value(ctx)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
                 ),
@@ -774,18 +746,16 @@ pub mod imports {
                 Func::new(
                     &mut *store,
                     FuncType::new(
-                        [ValueType::Borrow(
-                            crate::WasiP2OutputStreamResource::resource_type(),
-                        )],
+                        [ValueType::Borrow(crate::WasiP2OutputStreamResource::resource_type())],
                         [ValueType::Result(ResultType::new(
                             None,
                             Some(StreamError::ty()),
                         ))],
                     ),
                     |mut ctx, params, results| {
-                        let self_ = crate::WasiP2OutputStreamResource::from_value(&params[0])?;
+                        let self_ = crate::WasiP2OutputStreamResource::from_value(&params[0], ctx.as_context())?;
                         let result = ctx.data_mut().output_stream_blocking_flush(self_);
-                        results[0] = result.to_value(ctx)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
                 ),
@@ -798,17 +768,13 @@ pub mod imports {
                 Func::new(
                     &mut *store,
                     FuncType::new(
-                        [ValueType::Borrow(
-                            crate::WasiP2OutputStreamResource::resource_type(),
-                        )],
-                        [ValueType::Own(
-                            crate::WasiP2PollableResource::resource_type(),
-                        )],
+                        [ValueType::Borrow(crate::WasiP2OutputStreamResource::resource_type())],
+                        [ValueType::Own(crate::WasiP2PollableResource::resource_type())],
                     ),
                     |mut ctx, params, results| {
-                        let self_ = crate::WasiP2OutputStreamResource::from_value(&params[0])?;
+                        let self_ = crate::WasiP2OutputStreamResource::from_value(&params[0], ctx.as_context())?;
                         let result = ctx.data_mut().output_stream_subscribe(self_);
-                        results[0] = result.to_value(ctx)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
                 ),
@@ -839,7 +805,7 @@ pub mod imports {
                     ),
                     |mut ctx, params, results| {
                         let result = ctx.data_mut().get_environment();
-                        results[0] = result.to_value(ctx)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
                 ),
@@ -864,7 +830,7 @@ pub mod imports {
                     &mut *store,
                     FuncType::new([ValueType::Result(ResultType::new(None, None))], []),
                     |mut ctx, params, _results| {
-                        let status = Result::<(), ()>::from_value(&params[0])?;
+                        let status = Result::<(), ()>::from_value(&params[0], ctx.as_context())?;
                         ctx.data_mut().exit(status);
                         Ok(())
                     },
@@ -888,15 +854,10 @@ pub mod imports {
                 "get-stdin",
                 Func::new(
                     &mut *store,
-                    FuncType::new(
-                        [],
-                        [ValueType::Own(
-                            crate::WasiP2InputStreamResource::resource_type(),
-                        )],
-                    ),
+                    FuncType::new([], [ValueType::Own(crate::WasiP2InputStreamResource::resource_type())]),
                     |mut ctx, params, results| {
                         let result = ctx.data_mut().get_stdin();
-                        results[0] = result.to_value(ctx)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
                 ),
@@ -919,15 +880,10 @@ pub mod imports {
                 "get-stdout",
                 Func::new(
                     &mut *store,
-                    FuncType::new(
-                        [],
-                        [ValueType::Own(
-                            crate::WasiP2OutputStreamResource::resource_type(),
-                        )],
-                    ),
+                    FuncType::new([], [ValueType::Own(crate::WasiP2OutputStreamResource::resource_type())]),
                     |mut ctx, params, results| {
                         let result = ctx.data_mut().get_stdout();
-                        results[0] = result.to_value(ctx)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
                 ),
@@ -950,15 +906,10 @@ pub mod imports {
                 "get-stderr",
                 Func::new(
                     &mut *store,
-                    FuncType::new(
-                        [],
-                        [ValueType::Own(
-                            crate::WasiP2OutputStreamResource::resource_type(),
-                        )],
-                    ),
+                    FuncType::new([], [ValueType::Own(crate::WasiP2OutputStreamResource::resource_type())]),
                     |mut ctx, params, results| {
                         let result = ctx.data_mut().get_stderr();
-                        results[0] = result.to_value(ctx)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
                 ),
@@ -977,7 +928,7 @@ pub mod imports {
     // resource type documentation instead.
     pub fn register_terminal_input_host<T: TerminalInputHost + 'static, E: backend::WasmEngine>(
         linker: &mut Linker,
-        _store: &mut Store<T, E>,
+        store: &mut Store<T, E>,
     ) -> Result<()> {
         let host_interface = linker
             .define_instance("wasi:cli/terminal-input@0.2.6".try_into().unwrap())
@@ -985,10 +936,7 @@ pub mod imports {
 
         // Register resource: terminal-input
         host_interface
-            .define_resource(
-                "terminal-input",
-                crate::WasiP2TerminalInputResource::resource_type(),
-            )
+            .define_resource("terminal-input", crate::WasiP2TerminalInputResource::resource_type())
             .context("Failed to define resource terminal-input")?;
 
         Ok(())
@@ -1006,7 +954,7 @@ pub mod imports {
         E: backend::WasmEngine,
     >(
         linker: &mut Linker,
-        _store: &mut Store<T, E>,
+        store: &mut Store<T, E>,
     ) -> Result<()> {
         let host_interface = linker
             .define_instance("wasi:cli/terminal-output@0.2.6".try_into().unwrap())
@@ -1014,10 +962,7 @@ pub mod imports {
 
         // Register resource: terminal-output
         host_interface
-            .define_resource(
-                "terminal-output",
-                crate::WasiP2TerminalOutputResource::resource_type(),
-            )
+            .define_resource("terminal-output", crate::WasiP2TerminalOutputResource::resource_type())
             .context("Failed to define resource terminal-output")?;
 
         Ok(())
@@ -1044,7 +989,7 @@ pub mod imports {
                     ),
                     |mut ctx, params, results| {
                         let result = ctx.data_mut().get_terminal_stdin();
-                        results[0] = result.to_value(ctx)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
                 ),
@@ -1078,7 +1023,7 @@ pub mod imports {
                     ),
                     |mut ctx, params, results| {
                         let result = ctx.data_mut().get_terminal_stdout();
-                        results[0] = result.to_value(ctx)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
                 ),
@@ -1112,7 +1057,7 @@ pub mod imports {
                     ),
                     |mut ctx, params, results| {
                         let result = ctx.data_mut().get_terminal_stderr();
-                        results[0] = result.to_value(ctx)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
                 ),

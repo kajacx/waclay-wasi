@@ -18,26 +18,22 @@ impl WasiP2PollableResource {
     }
 }
 
-impl ResourceConvert for WasiP2PollableResource {
-    fn ty_own() -> ValueType {
+impl ComponentType for WasiP2PollableResource {
+    fn ty() -> ValueType {
         ValueType::Own(RESOURCE_TYPE.clone())
     }
 
-    fn ty_borrow() -> ValueType {
-        ValueType::Borrow(RESOURCE_TYPE.clone())
-    }
-
-    fn from_value(ctx: impl AsContext, value: Value) -> anyhow::Result<Self> {
+    fn from_value(value: &Value, ctx: impl AsContext) -> anyhow::Result<Self> {
         match value {
             Value::Own(own) => Ok(own.rep::<Self, _, _>(&ctx.as_context())?.clone()),
             Value::Borrow(borrow) => Ok(borrow.rep::<Self, _, _>(&ctx.as_context())?.clone()),
             _ => anyhow::bail!(
-                "Expected resource of type WasiP2TerminalInputResource, but got {value:?} instead"
+                "Expected resource of type WasiP2PollableResource, but got {value:?} instead"
             ),
         }
     }
 
-    fn to_value(self, ctx: impl AsContextMut) -> anyhow::Result<Value> {
+    fn into_value(self, ctx: impl AsContextMut) -> anyhow::Result<Value> {
         Ok(Value::Own(ResourceOwn::new(
             ctx,
             self,

@@ -18,16 +18,12 @@ impl WasiP2OutputStreamResource {
     }
 }
 
-impl ResourceConvert for WasiP2OutputStreamResource {
-    fn ty_own() -> ValueType {
+impl ComponentType for WasiP2OutputStreamResource {
+    fn ty() -> ValueType {
         ValueType::Own(RESOURCE_TYPE.clone())
     }
 
-    fn ty_borrow() -> ValueType {
-        ValueType::Borrow(RESOURCE_TYPE.clone())
-    }
-
-    fn from_value(ctx: impl AsContext, value: Value) -> anyhow::Result<Self> {
+    fn from_value(value: &Value, ctx: impl AsContext) -> anyhow::Result<Self> {
         match value {
             Value::Own(own) => Ok(own.rep::<Self, _, _>(&ctx.as_context())?.clone()),
             Value::Borrow(borrow) => Ok(borrow.rep::<Self, _, _>(&ctx.as_context())?.clone()),
@@ -37,7 +33,7 @@ impl ResourceConvert for WasiP2OutputStreamResource {
         }
     }
 
-    fn to_value(self, ctx: impl AsContextMut) -> anyhow::Result<Value> {
+    fn into_value(self, ctx: impl AsContextMut) -> anyhow::Result<Value> {
         Ok(Value::Own(ResourceOwn::new(
             ctx,
             self,
