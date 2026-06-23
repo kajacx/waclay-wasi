@@ -3,8 +3,9 @@ use std::sync::LazyLock;
 use crate::*;
 
 #[derive(Debug, Clone)]
-pub struct WasiP2OutputStreamResource {
-    pub id: usize,
+pub enum WasiP2OutputStreamResource {
+    Stdout,
+    Stderr,
 }
 
 static RESOURCE_TYPE: LazyLock<ResourceType> = LazyLock::new(|| {
