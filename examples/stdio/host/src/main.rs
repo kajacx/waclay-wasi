@@ -1,4 +1,5 @@
 use waclay::*;
+use waclay_wasi::{AsWasiP2Ctx, WasiP2Ctx};
 
 mod bindings;
 
@@ -7,13 +8,11 @@ const WASM: &[u8] =
     include_bytes!("../../guest/target/wasm32-wasip2/debug/example_stdio_guest.wasm");
 
 struct StoreData {
-    ctx: waclay_wasi::WasiP2Ctx,
+    ctx: WasiP2Ctx,
 }
 
-impl waclay_wasi::WasiP2CtxHolder for StoreData {
-    type Ctx = waclay_wasi::WasiP2Ctx;
-
-    fn get_ctx_mut(&mut self) -> &mut Self::Ctx {
+impl AsWasiP2Ctx for StoreData {
+    fn as_wasi_ctx(&mut self) -> &mut WasiP2Ctx {
         &mut self.ctx
     }
 }

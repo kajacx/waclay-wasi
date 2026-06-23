@@ -1,3 +1,3 @@
 use crate::*;
 
-impl<T: WasiP2CtxHolder> bindings::TerminalOutputHost for T {}
+impl<T: AsWasiP2Ctx> bindings::TerminalOutputHost for T {}

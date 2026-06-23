@@ -75,6 +75,6 @@ impl WasiP2Ctx {
     }
 }
 
-pub trait WasiP2CtxHolder {
-    fn get_ctx_mut(&mut self) -> &mut WasiP2Ctx;
+pub trait AsWasiP2Ctx {
+    fn as_wasi_ctx(&mut self) -> &mut WasiP2Ctx;
 }

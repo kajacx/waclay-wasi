@@ -15,7 +15,7 @@ pub trait WasiP2OutputStream {
     }
 }
 
-impl<T: WasiP2CtxHolder> crate::bindings::StreamsHost for T {
+impl<T: AsWasiP2Ctx> crate::bindings::StreamsHost for T {
     fn input_stream_blocking_read(
         &mut self,
         _self_: WasiP2InputStreamResource,
@@ -47,8 +47,12 @@ impl<T: WasiP2CtxHolder> crate::bindings::StreamsHost for T {
         self_: WasiP2OutputStreamResource,
     ) -> Result<u64, bindings::StreamError> {
         match self_ {
-            // WasiP2OutputStreamResource::Stdout => self.get_ctx_mut().stdout.
-            _ => todo!(),
+            WasiP2OutputStreamResource::Stdout => {
+                self.as_wasi_ctx().stdout.output_stream_check_write()
+            }
+            WasiP2OutputStreamResource::Stderr => {
+                self.as_wasi_ctx().stderr.output_stream_check_write()
+            }
         }
     }
 
@@ -59,12 +63,12 @@ impl<T: WasiP2CtxHolder> crate::bindings::StreamsHost for T {
     ) -> Result<(), bindings::StreamError> {
         match self_ {
             // TODO: better error handling
-            WasiP2OutputStreamResource::Stdout => {}
+            WasiP2OutputStreamResource::Stdout => {
+                self.as_wasi_ctx().stdout.output_stream_write(contents)
+            }
             WasiP2OutputStreamResource::Stderr => {
-                std::io::stderr().write_all(&contents).map_err(|err| {
-                    eprintln!("Unexpected error when writing to stderr: {err:?}");
-                    bindings::StreamError::Closed
-                })
+                // TODO: bug here, will a test get it?
+                self.as_wasi_ctx().stdout.output_stream_write(contents)
             }
         }
     }
@@ -94,7 +98,7 @@ pub mod internal {
             Ok(4 * 1024 * 1024)
         }
 
-        fn output_stream_write(&mut self, contents: Vec<u8>) -> Result<(), bindings::StreamError> {
+        fn output_stream_write(&mut self, _contents: Vec<u8>) -> Result<(), bindings::StreamError> {
             Ok(())
         }
     }

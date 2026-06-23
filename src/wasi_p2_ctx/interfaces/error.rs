@@ -1,3 +1,3 @@
 use crate::*;
 
-impl<T: WasiP2CtxHolder> crate::bindings::ErrorHost for T {}
+impl<T: AsWasiP2Ctx> crate::bindings::ErrorHost for T {}

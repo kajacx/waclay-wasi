@@ -14,10 +14,9 @@ mod terminal_stderr;
 mod terminal_stdin;
 mod terminal_stdout;
 
-pub use environment_vars::*;
 pub use streams::*;
 
-pub fn add_to_linker<S: WasiP2CtxHolder + 'static, E: wasm_runtime_layer::backend::WasmEngine>(
+pub fn add_to_linker<S: AsWasiP2Ctx + 'static, E: wasm_runtime_layer::backend::WasmEngine>(
     linker: &mut Linker,
     store: &mut Store<S, E>,
 ) -> anyhow::Result<()> {
