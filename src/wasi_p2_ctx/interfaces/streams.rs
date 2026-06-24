@@ -20,30 +20,6 @@ pub trait WasiP2OutputStream {
     fn as_any(&self) -> &dyn Any;
 
     fn as_any_mut(&mut self) -> &mut dyn Any;
-
-    // fn as_any(&self) -> &dyn Any {
-    //     self
-    // }
-
-    // fn as_any_mut(&mut self) -> &mut dyn Any {
-    //     self
-    // }
-
-    // fn as_any(&self) -> &(dyn Any + '_) {
-    //     &self
-    // }
-
-    // fn as_any_mut(&mut self) -> &mut (dyn Any + '_) {
-    //     &mut self
-    // }
-
-    // fn downcast<T: WasiP2OutputStream>(&self) -> Option<&T> {
-    //     self.as_any().downcast_ref::<T>()
-    // }
-
-    // fn downcast_mut<T: WasiP2OutputStream>(&mut self) -> Option<&mut T> {
-    //     self.as_any_mut().downcast_mut::<T>()
-    // }
 }
 
 impl<T: AsWasiP2Ctx> crate::bindings::StreamsHost for T {

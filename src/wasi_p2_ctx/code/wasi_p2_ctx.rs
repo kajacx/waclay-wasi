@@ -15,6 +15,10 @@ impl WasiP2Ctx {
         }
     }
 
+    pub fn clear_all(&mut self) -> &mut Self {
+        self.clear_stdout().clear_stderr().clear_environment_vars()
+    }
+
     // Environment variables
 
     pub fn inherit_environment_vars(&mut self) -> &mut Self {

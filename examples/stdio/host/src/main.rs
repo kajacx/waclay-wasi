@@ -1,5 +1,5 @@
 use waclay::*;
-use waclay_wasi::{AsWasiP2Ctx, WasiP2Ctx};
+use waclay_wasi::{AsWasiP2Ctx, WasiP2Ctx, WasiP2OutputStream};
 
 mod bindings;
 
@@ -44,7 +44,6 @@ pub fn main() {
 
     // Ignoring std io and pretending it's closed is already the default behaviour,
     // but you can call "clear" methods to make sure in case wasi ctx was modified before.
-    store.data_mut().as_wasi_mut().clear_stdout().clear_stderr();
 
     print_stdout
         .call(&mut store, "Voided message to stdout".to_string())
@@ -61,6 +60,7 @@ pub fn main() {
     store
         .data_mut()
         .as_wasi_mut()
+        .clear_all()
         .inherit_stdout()
         .inherit_stderr();
 
@@ -81,5 +81,68 @@ pub fn main() {
 
     // Capture stdio with a custom stream
 
-    store.data_mut().as_wasi_mut().stdout.as_any_mut();
+    store
+        .data_mut()
+        .as_wasi_mut()
+        .clear_all()
+        .set_stdout(Box::new(CapturingStream(vec![])))
+        .set_stderr(Box::new(CapturingStream(vec![])));
+
+    print_stdout
+        .call(&mut store, "Captured message to stdout".to_string())
+        .unwrap();
+
+    print_stderr
+        .call(&mut store, "Captured message to stderr".to_string())
+        .unwrap();
+
+    let stdout_captured_bytes = &store
+        .data()
+        .as_wasi_ctx()
+        .stdout
+        .as_any()
+        .downcast_ref::<CapturingStream>()
+        .unwrap()
+        .0;
+    assert_eq!(
+        str::from_utf8(stdout_captured_bytes).unwrap(),
+        "[Rust guest writing to stdout]: Captured message to stdout\n"
+    );
+
+    let stderr_captured_bytes = &store
+        .data()
+        .as_wasi_ctx()
+        .stderr
+        .as_any()
+        .downcast_ref::<CapturingStream>()
+        .unwrap()
+        .0;
+    assert_eq!(
+        str::from_utf8(stderr_captured_bytes).unwrap(),
+        "[Rust guest writing to stderr]: Captured message to stderr\n"
+    );
+}
+
+struct CapturingStream(Vec<u8>);
+
+impl WasiP2OutputStream for CapturingStream {
+    fn output_stream_check_write(&mut self) -> Result<u64, waclay_wasi::bindings::StreamError> {
+        Ok(4 * 1024 * 1024)
+    }
+
+    fn output_stream_write(
+        &mut self,
+        mut contents: Vec<u8>,
+    ) -> Result<(), waclay_wasi::bindings::StreamError> {
+        self.0.append(&mut contents);
+        Ok(())
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
 }
