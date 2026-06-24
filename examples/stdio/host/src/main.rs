@@ -12,7 +12,11 @@ struct StoreData {
 }
 
 impl AsWasiP2Ctx for StoreData {
-    fn as_wasi_ctx(&mut self) -> &mut WasiP2Ctx {
+    fn as_wasi_ctx(&self) -> &WasiP2Ctx {
+        &self.ctx
+    }
+
+    fn as_wasi_mut(&mut self) -> &mut WasiP2Ctx {
         &mut self.ctx
     }
 }
@@ -40,7 +44,7 @@ pub fn main() {
 
     // Ignoring std io and pretending it's closed is already the default behaviour,
     // but you can call "clear" methods to make sure in case wasi ctx was modified before.
-    store.data_mut().as_wasi_ctx().clear_stdout().clear_stderr();
+    store.data_mut().as_wasi_mut().clear_stdout().clear_stderr();
 
     print_stdout
         .call(&mut store, "Voided message to stdout".to_string())
@@ -56,7 +60,7 @@ pub fn main() {
     // Redirect / inherit stdio from the host
     store
         .data_mut()
-        .as_wasi_ctx()
+        .as_wasi_mut()
         .inherit_stdout()
         .inherit_stderr();
 
@@ -76,4 +80,6 @@ pub fn main() {
     assert_eq!(result, "[Rust guest reading stdin]: ");
 
     // Capture stdio with a custom stream
+
+    store.data_mut().as_wasi_mut().stdout.as_any_mut();
 }

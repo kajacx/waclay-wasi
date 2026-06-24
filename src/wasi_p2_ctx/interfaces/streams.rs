@@ -1,4 +1,7 @@
-use std::io::{Read, Write};
+use std::{
+    any::Any,
+    io::{Read, Write},
+};
 
 use crate::*;
 
@@ -13,6 +16,34 @@ pub trait WasiP2OutputStream {
     fn output_stream_blocking_flush(&mut self) -> Result<(), bindings::StreamError> {
         Ok(())
     }
+
+    fn as_any(&self) -> &dyn Any;
+
+    fn as_any_mut(&mut self) -> &mut dyn Any;
+
+    // fn as_any(&self) -> &dyn Any {
+    //     self
+    // }
+
+    // fn as_any_mut(&mut self) -> &mut dyn Any {
+    //     self
+    // }
+
+    // fn as_any(&self) -> &(dyn Any + '_) {
+    //     &self
+    // }
+
+    // fn as_any_mut(&mut self) -> &mut (dyn Any + '_) {
+    //     &mut self
+    // }
+
+    // fn downcast<T: WasiP2OutputStream>(&self) -> Option<&T> {
+    //     self.as_any().downcast_ref::<T>()
+    // }
+
+    // fn downcast_mut<T: WasiP2OutputStream>(&mut self) -> Option<&mut T> {
+    //     self.as_any_mut().downcast_mut::<T>()
+    // }
 }
 
 impl<T: AsWasiP2Ctx> crate::bindings::StreamsHost for T {
@@ -48,10 +79,10 @@ impl<T: AsWasiP2Ctx> crate::bindings::StreamsHost for T {
     ) -> Result<u64, bindings::StreamError> {
         match self_ {
             WasiP2OutputStreamResource::Stdout => {
-                self.as_wasi_ctx().stdout.output_stream_check_write()
+                self.as_wasi_mut().stdout.output_stream_check_write()
             }
             WasiP2OutputStreamResource::Stderr => {
-                self.as_wasi_ctx().stderr.output_stream_check_write()
+                self.as_wasi_mut().stderr.output_stream_check_write()
             }
         }
     }
@@ -64,10 +95,10 @@ impl<T: AsWasiP2Ctx> crate::bindings::StreamsHost for T {
         match self_ {
             // TODO: better error handling
             WasiP2OutputStreamResource::Stdout => {
-                self.as_wasi_ctx().stdout.output_stream_write(contents)
+                self.as_wasi_mut().stdout.output_stream_write(contents)
             }
             WasiP2OutputStreamResource::Stderr => {
-                self.as_wasi_ctx().stderr.output_stream_write(contents)
+                self.as_wasi_mut().stderr.output_stream_write(contents)
             }
         }
     }
@@ -100,6 +131,14 @@ pub mod internal {
         fn output_stream_write(&mut self, _contents: Vec<u8>) -> Result<(), bindings::StreamError> {
             Ok(())
         }
+
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+
+        fn as_any_mut(&mut self) -> &mut dyn Any {
+            self
+        }
     }
 
     pub struct OutputStreamStdout {}
@@ -115,6 +154,14 @@ pub mod internal {
                 bindings::StreamError::Closed
             })
         }
+
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+
+        fn as_any_mut(&mut self) -> &mut dyn Any {
+            self
+        }
     }
 
     pub struct OutputStreamStderr {}
@@ -129,6 +176,14 @@ pub mod internal {
                 eprintln!("Unexpected error when writing to stdout: {err:?}");
                 bindings::StreamError::Closed
             })
+        }
+
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+
+        fn as_any_mut(&mut self) -> &mut dyn Any {
+            self
         }
     }
 }

@@ -76,5 +76,17 @@ impl WasiP2Ctx {
 }
 
 pub trait AsWasiP2Ctx {
-    fn as_wasi_ctx(&mut self) -> &mut WasiP2Ctx;
+    fn as_wasi_ctx(&self) -> &WasiP2Ctx;
+
+    fn as_wasi_mut(&mut self) -> &mut WasiP2Ctx;
+}
+
+impl AsWasiP2Ctx for WasiP2Ctx {
+    fn as_wasi_ctx(&self) -> &WasiP2Ctx {
+        self
+    }
+
+    fn as_wasi_mut(&mut self) -> &mut WasiP2Ctx {
+        self
+    }
 }
