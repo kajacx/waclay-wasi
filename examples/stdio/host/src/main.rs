@@ -18,8 +18,9 @@ impl AsWasiP2Ctx for StoreData {
 }
 
 pub fn main() {
-    let engine = Engine::new(wasmi_runtime_layer::Engine::default());
+    // Prepare store, component and exports
 
+    let engine = Engine::new(wasmi_runtime_layer::Engine::default());
     let mut store = Store::new(
         &engine,
         StoreData {
@@ -27,32 +28,52 @@ pub fn main() {
         },
     );
 
-    let component = Component::new(&engine, WASM).unwrap();
-
     let mut linker = Linker::default();
-
     waclay_wasi::add_to_linker(&mut linker, &mut store).unwrap();
 
+    let component = Component::new(&engine, WASM).unwrap();
     let instance = linker.instantiate(&mut store, &component).unwrap();
 
     let print_stdout = bindings::exports_funcs::get_print_stdout(&instance, &mut store).unwrap();
-
-    print_stdout
-        .call(&mut store, "Hello world!".to_string())
-        .unwrap();
-
     let print_stderr = bindings::exports_funcs::get_print_stderr(&instance, &mut store).unwrap();
-
-    print_stderr
-        .call(&mut store, "Goodbye world!".to_string())
-        .unwrap();
-
     let read_stdin = bindings::exports_funcs::get_read_stdin(&instance, &mut store).unwrap();
 
+    // Ignoring std io and pretending it's closed is already the default behaviour,
+    // but you can call "clear" methods to make sure in case wasi ctx was modified before.
+    store.data_mut().as_wasi_ctx().clear_stdout().clear_stderr();
+
+    print_stdout
+        .call(&mut store, "Voided message to stdout".to_string())
+        .unwrap();
+
+    print_stderr
+        .call(&mut store, "Voided message to stderr".to_string())
+        .unwrap();
+
+    // let result = read_stdin.call(&mut store, ()).unwrap();
+    // assert_eq!(result, "");
+
+    // Redirect / inherit stdio from the host
+    store
+        .data_mut()
+        .as_wasi_ctx()
+        .inherit_stdout()
+        .inherit_stderr();
+
+    print_stdout
+        .call(&mut store, "Redirected message to stdout".to_string())
+        .unwrap();
+
+    print_stderr
+        .call(&mut store, "Redirected message to stderr".to_string())
+        .unwrap();
+
     let result = read_stdin.call(&mut store, ()).unwrap();
-    println!("Read from guest: {result}");
+    assert_eq!(result, "[Rust guest reading stdin]: line1");
     let result = read_stdin.call(&mut store, ()).unwrap();
-    println!("Read from guest: {result}");
+    assert_eq!(result, "[Rust guest reading stdin]: line2");
     let result = read_stdin.call(&mut store, ()).unwrap();
-    println!("Read from guest: {result}");
+    assert_eq!(result, "[Rust guest reading stdin]: ");
+
+    // Capture stdio with a custom stream
 }

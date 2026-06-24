@@ -14,6 +14,18 @@ wasm-tools component wit guest/target/wasm32-wasip2/debug/example_stdio_guest.wa
 wit-bindgen-wcl ./stdio.wit ./host/src/bindings.rs
 
 cd host
-echo 'hello
-world' | cargo run
+
+if ! echo -n $'line1\nline2' | cargo --quiet run > output-stdout.txt 2> output-stderr.txt; then
+    cat output-stdout.txt
+    cat output-stderr.txt >&2
+
+    exit 1
+fi
+
+cat output-stdout.txt
+cat output-stderr.txt >&2
+
+diff -u output-stdout.txt.snap output-stdout.txt
+diff -u output-stderr.txt.snap output-stderr.txt
+
 cd ..

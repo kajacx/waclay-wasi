@@ -67,8 +67,7 @@ impl<T: AsWasiP2Ctx> crate::bindings::StreamsHost for T {
                 self.as_wasi_ctx().stdout.output_stream_write(contents)
             }
             WasiP2OutputStreamResource::Stderr => {
-                // TODO: bug here, will a test get it?
-                self.as_wasi_ctx().stdout.output_stream_write(contents)
+                self.as_wasi_ctx().stderr.output_stream_write(contents)
             }
         }
     }

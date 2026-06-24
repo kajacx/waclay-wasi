@@ -14,19 +14,19 @@ struct GuestComponent;
 
 impl bindings::exports::waclay_wasi::examples::funcs::Guest for GuestComponent {
     fn print_stdout(text: String) {
-        println!("[Rust guest receiving a message]: {text}");
+        println!("[Rust guest writing to stdout]: {text}");
     }
 
     fn print_stderr(text: String) {
-        eprintln!("[Rust guest receiving a message]: {text}");
+        eprintln!("[Rust guest writing to stderr]: {text}");
     }
 
     fn read_stdin() -> String {
         let mut buffer = String::new();
-        let stdin = std::io::stdin();
-        stdin
+        std::io::stdin()
             .read_line(&mut buffer)
             .expect("read line from stdin inside of the Rust guest");
-        buffer.trim_end().to_string()
+        let line = buffer.trim_end();
+        format!("[Rust guest reading stdin]: {line}")
     }
 }
