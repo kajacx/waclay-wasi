@@ -22,24 +22,21 @@ pub trait WasiP2OutputStream {
     fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 
+pub trait WasiP2InputStream {
+    fn input_stream_blocking_read(&mut self, len: u64) -> Result<Vec<u8>, bindings::StreamError>;
+
+    fn as_any(&self) -> &dyn Any;
+
+    fn as_any_mut(&mut self) -> &mut dyn Any;
+}
+
 impl<T: AsWasiP2Ctx> crate::bindings::StreamsHost for T {
     fn input_stream_blocking_read(
         &mut self,
         _self_: WasiP2InputStreamResource,
         len: u64,
     ) -> Result<Vec<u8>, bindings::StreamError> {
-        let mut bytes = vec![0u8; len as usize];
-        let result = std::io::stdin().read(&mut bytes);
-        match result {
-            Ok(bytes_read) => {
-                bytes.truncate(bytes_read);
-                Ok(bytes)
-            }
-            Err(error) => {
-                eprintln!("Read stdio failed: {error:?}");
-                Err(bindings::StreamError::Closed)
-            }
-        }
+        self.as_wasi_mut().stdin.input_stream_blocking_read(len)
     }
 
     fn input_stream_subscribe(
@@ -149,9 +146,58 @@ pub mod internal {
 
         fn output_stream_write(&mut self, contents: Vec<u8>) -> Result<(), bindings::StreamError> {
             std::io::stderr().write_all(&contents).map_err(|err| {
-                eprintln!("Unexpected error when writing to stdout: {err:?}");
+                eprintln!("Unexpected error when writing to stderr: {err:?}");
                 bindings::StreamError::Closed
             })
+        }
+
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+
+        fn as_any_mut(&mut self) -> &mut dyn Any {
+            self
+        }
+    }
+
+    pub struct InputStreamEmpty {}
+
+    impl WasiP2InputStream for InputStreamEmpty {
+        fn input_stream_blocking_read(
+            &mut self,
+            _len: u64,
+        ) -> Result<Vec<u8>, bindings::StreamError> {
+            Ok(vec![])
+        }
+
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+
+        fn as_any_mut(&mut self) -> &mut dyn Any {
+            self
+        }
+    }
+
+    pub struct InputStreamInherit {}
+
+    impl WasiP2InputStream for InputStreamInherit {
+        fn input_stream_blocking_read(
+            &mut self,
+            len: u64,
+        ) -> Result<Vec<u8>, bindings::StreamError> {
+            let mut bytes = vec![0u8; len as usize];
+            let result = std::io::stdin().read(&mut bytes);
+            match result {
+                Ok(bytes_read) => {
+                    bytes.truncate(bytes_read);
+                    Ok(bytes)
+                }
+                Err(error) => {
+                    eprintln!("Read stdio failed: {error:?}");
+                    Err(bindings::StreamError::Closed)
+                }
+            }
         }
 
         fn as_any(&self) -> &dyn Any {

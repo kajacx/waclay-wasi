@@ -2,6 +2,7 @@ use crate::*;
 
 pub struct WasiP2Ctx {
     pub environment_vars: Vec<(String, String)>,
+    pub stdin: Box<dyn WasiP2InputStream>,
     pub stdout: Box<dyn WasiP2OutputStream>,
     pub stderr: Box<dyn WasiP2OutputStream>,
 }
@@ -10,13 +11,17 @@ impl WasiP2Ctx {
     pub fn new() -> Self {
         Self {
             environment_vars: vec![],
+            stdin: Box::new(internal::InputStreamEmpty {}),
             stdout: Box::new(internal::OutputStreamEmpty {}),
             stderr: Box::new(internal::OutputStreamEmpty {}),
         }
     }
 
     pub fn clear_all(&mut self) -> &mut Self {
-        self.clear_stdout().clear_stderr().clear_environment_vars()
+        self.clear_stdin()
+            .clear_stdout()
+            .clear_stderr()
+            .clear_environment_vars()
     }
 
     // Environment variables
@@ -41,6 +46,23 @@ impl WasiP2Ctx {
 
     pub fn clear_environment_vars(&mut self) -> &mut Self {
         self.environment_vars = vec![];
+        self
+    }
+
+    // Stdin
+
+    pub fn inherit_stdin(&mut self) -> &mut Self {
+        self.stdin = Box::new(internal::InputStreamInherit {});
+        self
+    }
+
+    pub fn set_stdin(&mut self, stdin: Box<dyn WasiP2InputStream>) -> &mut Self {
+        self.stdin = stdin;
+        self
+    }
+
+    pub fn clear_stdin(&mut self) -> &mut Self {
+        self.stdin = Box::new(internal::InputStreamEmpty {});
         self
     }
 

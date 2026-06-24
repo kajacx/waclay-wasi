@@ -1,5 +1,7 @@
+use std::cmp::min;
+
 use waclay::*;
-use waclay_wasi::{AsWasiP2Ctx, WasiP2Ctx, WasiP2OutputStream};
+use waclay_wasi::{AsWasiP2Ctx, WasiP2Ctx, WasiP2InputStream, WasiP2OutputStream};
 
 mod bindings;
 
@@ -53,14 +55,15 @@ pub fn main() {
         .call(&mut store, "Voided message to stderr".to_string())
         .unwrap();
 
-    // let result = read_stdin.call(&mut store, ()).unwrap();
-    // assert_eq!(result, "");
+    let result = read_stdin.call(&mut store, ()).unwrap();
+    assert_eq!(result, "[Rust guest reading stdin]: ");
 
     // Redirect / inherit stdio from the host
     store
         .data_mut()
         .as_wasi_mut()
         .clear_all()
+        .inherit_stdin()
         .inherit_stdout()
         .inherit_stderr();
 
@@ -85,8 +88,12 @@ pub fn main() {
         .data_mut()
         .as_wasi_mut()
         .clear_all()
-        .set_stdout(Box::new(CapturingStream(vec![])))
-        .set_stderr(Box::new(CapturingStream(vec![])));
+        .set_stdin(Box::new(PreparedInputStream {
+            data: "prepared1\nprepared2".as_bytes().to_vec(),
+            offset: 0,
+        }))
+        .set_stdout(Box::new(CapturingOutputStream(vec![])))
+        .set_stderr(Box::new(CapturingOutputStream(vec![])));
 
     print_stdout
         .call(&mut store, "Captured message to stdout".to_string())
@@ -101,7 +108,7 @@ pub fn main() {
         .as_wasi_ctx()
         .stdout
         .as_any()
-        .downcast_ref::<CapturingStream>()
+        .downcast_ref::<CapturingOutputStream>()
         .unwrap()
         .0;
     assert_eq!(
@@ -114,18 +121,25 @@ pub fn main() {
         .as_wasi_ctx()
         .stderr
         .as_any()
-        .downcast_ref::<CapturingStream>()
+        .downcast_ref::<CapturingOutputStream>()
         .unwrap()
         .0;
     assert_eq!(
         str::from_utf8(stderr_captured_bytes).unwrap(),
         "[Rust guest writing to stderr]: Captured message to stderr\n"
     );
+
+    let result = read_stdin.call(&mut store, ()).unwrap();
+    assert_eq!(result, "[Rust guest reading stdin]: prepared1");
+    let result = read_stdin.call(&mut store, ()).unwrap();
+    assert_eq!(result, "[Rust guest reading stdin]: prepared2");
+    let result = read_stdin.call(&mut store, ()).unwrap();
+    assert_eq!(result, "[Rust guest reading stdin]: ");
 }
 
-struct CapturingStream(Vec<u8>);
+struct CapturingOutputStream(Vec<u8>);
 
-impl WasiP2OutputStream for CapturingStream {
+impl WasiP2OutputStream for CapturingOutputStream {
     fn output_stream_check_write(&mut self) -> Result<u64, waclay_wasi::bindings::StreamError> {
         Ok(4 * 1024 * 1024)
     }
@@ -136,6 +150,34 @@ impl WasiP2OutputStream for CapturingStream {
     ) -> Result<(), waclay_wasi::bindings::StreamError> {
         self.0.append(&mut contents);
         Ok(())
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
+}
+
+struct PreparedInputStream {
+    data: Vec<u8>,
+    offset: usize,
+}
+
+impl WasiP2InputStream for PreparedInputStream {
+    fn input_stream_blocking_read(
+        &mut self,
+        len: u64,
+    ) -> Result<Vec<u8>, waclay_wasi::bindings::StreamError> {
+        let len = len as usize;
+        let end = min(self.offset + len, self.data.len());
+
+        let result = self.data[self.offset..end].to_vec();
+
+        self.offset = end;
+        Ok(result)
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
