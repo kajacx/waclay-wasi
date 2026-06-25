@@ -14,15 +14,15 @@ Std IO | ✔️ | ✔️ | ✔️
 Env variables | ✔️ | ✔️ | ✔️
 Cli arguments | ✔️ | ✔️ | ✔️
 Random generation | ✔️ | ✔️ | ✔️
-Clocks | ❌ | ❌ | ❌
+Clocks | ✔️ | ❌ | ❌
 Filesystem | ❌ | ❌ | ❌
 Networking | ❌ | ❌ | ❌
 
 ### Legend
 
 - **Empty impl** - Completely sandboxed mode - no file exists, network is disconnected, stdio is completely voided, time is stuck at 0, etc.
-- **Inherit impl** - Functionality is inherited from the host - stdout is redirected to host's std out, real file access, real env variables, etc.
-- **Custom impl** - User-defined behaviour - arbitrary bytes as inputs to stdin, seeded random generator, custom cli arguments, etc.
+- **Inherit impl** - Functionality is inherited from the host - stdout is redirected to host's stdout, real file access, real env variables, etc.
+- **Custom impl** - User-defined behaviour - arbitrary bytes as input to stdin, seeded random generator, custom cli arguments, etc.
 
 ## Goals
 

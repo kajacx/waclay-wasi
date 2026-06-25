@@ -17,6 +17,8 @@ world root {
   import wasi:cli/terminal-stdout@0.2.6;
   import wasi:cli/terminal-stderr@0.2.6;
   import wasi:random/random@0.2.6;
+  import wasi:clocks/monotonic-clock@0.2.6;
+  import wasi:clocks/wall-clock@0.2.6;
 }
 
 package wasi:io@0.2.6 {
@@ -112,5 +114,21 @@ package wasi:cli@0.2.6 {
 package wasi:random@0.2.6 {
   interface random {
     get-random-u64: func() -> u64;
+  }
+}
+
+package wasi:clocks@0.2.6 {
+  interface monotonic-clock {
+    type instant = u64;
+
+    now: func() -> instant;
+  }
+  interface wall-clock {
+    record datetime {
+      seconds: u64,
+      nanoseconds: u32,
+    }
+
+    now: func() -> datetime;
   }
 }

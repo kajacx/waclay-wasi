@@ -3,6 +3,7 @@ use crate::*;
 mod environment_vars;
 mod error;
 mod exit;
+mod monotonic_clock;
 mod poll;
 mod random;
 mod stderr;
@@ -14,6 +15,7 @@ mod terminal_output;
 mod terminal_stderr;
 mod terminal_stdin;
 mod terminal_stdout;
+mod wall_clock;
 
 pub use streams::*;
 
@@ -35,5 +37,7 @@ pub fn add_to_linker<S: AsWasiP2Ctx + 'static, E: wasm_runtime_layer::backend::W
     bindings::imports::register_terminal_stdin_host(linker, store)?;
     bindings::imports::register_terminal_stdout_host(linker, store)?;
     bindings::imports::register_terminal_stderr_host(linker, store)?;
+    bindings::imports::register_monotonic_clock_host(linker, store)?;
+    bindings::imports::register_wall_clock_host(linker, store)?;
     Ok(())
 }

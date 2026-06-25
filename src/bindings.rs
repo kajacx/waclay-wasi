@@ -480,6 +480,72 @@ impl TerminalOutputResource {
     }
 }
 
+pub type Instant = u64;
+
+#[derive(Debug, Clone)]
+pub struct Datetime {
+    pub seconds: u64,
+    pub nanoseconds: u32,
+}
+
+impl ComponentType for Datetime {
+    fn ty() -> ValueType {
+        ValueType::Record(
+            RecordType::new(
+                None,
+                [("seconds", ValueType::U64), ("nanoseconds", ValueType::U32)],
+            )
+            .unwrap(),
+        )
+    }
+
+    fn from_value(value: &Value, #[allow(unused)] ctx: impl AsContext) -> Result<Self> {
+        if let Value::Record(record) = value {
+            let seconds = record
+                .field("seconds")
+                .ok_or_else(|| anyhow!("Missing 'seconds' field"))?;
+            let nanoseconds = record
+                .field("nanoseconds")
+                .ok_or_else(|| anyhow!("Missing 'nanoseconds' field"))?;
+
+            let seconds = if let Value::U64(x) = seconds {
+                x
+            } else {
+                bail!("Expected u64")
+            };
+            let nanoseconds = if let Value::U32(x) = nanoseconds {
+                x
+            } else {
+                bail!("Expected u32")
+            };
+
+            Ok(Datetime {
+                seconds,
+                nanoseconds,
+            })
+        } else {
+            bail!("Expected Record value")
+        }
+    }
+
+    fn into_value(self, #[allow(unused)] mut ctx: impl AsContextMut) -> Result<Value> {
+        let record = Record::new(
+            RecordType::new(
+                None,
+                [("seconds", ValueType::U64), ("nanoseconds", ValueType::U32)],
+            )
+            .unwrap(),
+            [
+                ("seconds", Value::U64(self.seconds)),
+                ("nanoseconds", Value::U32(self.nanoseconds)),
+            ],
+        )?;
+        Ok(Value::Record(record))
+    }
+}
+
+impl UnaryComponentType for Datetime {}
+
 // ========== Host Imports ==========
 
 /// Host trait for interface: wasi:io/poll@0.2.6
@@ -558,6 +624,16 @@ pub trait TerminalStderrHost {
 /// Host trait for interface: wasi:random/random@0.2.6
 pub trait RandomHost {
     fn get_random_u64(&mut self) -> u64;
+}
+
+/// Host trait for interface: wasi:clocks/monotonic-clock@0.2.6
+pub trait MonotonicClockHost {
+    fn now(&mut self) -> Instant;
+}
+
+/// Host trait for interface: wasi:clocks/wall-clock@0.2.6
+pub trait WallClockHost {
+    fn now(&mut self) -> Datetime;
 }
 
 pub mod imports {
@@ -1110,6 +1186,61 @@ pub mod imports {
                 ),
             )
             .context("Failed to define get-random-u64 function")?;
+
+        Ok(())
+    }
+
+    pub fn register_monotonic_clock_host<
+        T: MonotonicClockHost + 'static,
+        E: backend::WasmEngine,
+    >(
+        linker: &mut Linker,
+        store: &mut Store<T, E>,
+    ) -> Result<()> {
+        let host_interface = linker
+            .define_instance("wasi:clocks/monotonic-clock@0.2.6".try_into().unwrap())
+            .context("Failed to define host interface")?;
+
+        host_interface
+            .define_func(
+                "now",
+                Func::new(
+                    &mut *store,
+                    FuncType::new([], [Instant::ty()]),
+                    |mut ctx, params, results| {
+                        let result = ctx.data_mut().now();
+                        results[0] = result.into_value(ctx.as_context_mut())?;
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define now function")?;
+
+        Ok(())
+    }
+
+    pub fn register_wall_clock_host<T: WallClockHost + 'static, E: backend::WasmEngine>(
+        linker: &mut Linker,
+        store: &mut Store<T, E>,
+    ) -> Result<()> {
+        let host_interface = linker
+            .define_instance("wasi:clocks/wall-clock@0.2.6".try_into().unwrap())
+            .context("Failed to define host interface")?;
+
+        host_interface
+            .define_func(
+                "now",
+                Func::new(
+                    &mut *store,
+                    FuncType::new([], [Datetime::ty()]),
+                    |mut ctx, params, results| {
+                        let result = ctx.data_mut().now();
+                        results[0] = result.into_value(ctx.as_context_mut())?;
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define now function")?;
 
         Ok(())
     }
