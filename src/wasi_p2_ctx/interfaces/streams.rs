@@ -91,7 +91,7 @@ impl<T: AsWasiP2Ctx> crate::bindings::StreamsHost for T {
     }
 }
 
-pub mod internal {
+pub(super) mod internal {
     use super::*;
 
     pub struct OutputStreamEmpty {}

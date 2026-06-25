@@ -16,6 +16,9 @@ pub struct WasiP2Ctx {
     pub stderr: Box<dyn WasiP2OutputStream>,
 
     pub rng: RNG,
+
+    pub wall_clock: Box<dyn WasiP2WallClock>,
+    // pub mono
 }
 
 impl WasiP2Ctx {
@@ -28,6 +31,7 @@ impl WasiP2Ctx {
             stdout: Box::new(internal::OutputStreamEmpty {}),
             stderr: Box::new(internal::OutputStreamEmpty {}),
             rng: RNG::new(DEFAULT_SEED),
+            wall_clock: Box::new(internal::EmptyWallClock {}),
         }
     }
 

@@ -17,7 +17,9 @@ mod terminal_stdin;
 mod terminal_stdout;
 mod wall_clock;
 
+pub use monotonic_clock::*;
 pub use streams::*;
+pub use wall_clock::*;
 
 pub fn add_to_linker<S: AsWasiP2Ctx + 'static, E: wasm_runtime_layer::backend::WasmEngine>(
     linker: &mut Linker,
@@ -40,4 +42,10 @@ pub fn add_to_linker<S: AsWasiP2Ctx + 'static, E: wasm_runtime_layer::backend::W
     bindings::imports::register_monotonic_clock_host(linker, store)?;
     bindings::imports::register_wall_clock_host(linker, store)?;
     Ok(())
+}
+
+pub mod internal {
+    // pub use super::monotonic_clock::internal::*;
+    pub use super::streams::internal::*;
+    pub use super::wall_clock::internal::*;
 }
