@@ -1,6 +1,8 @@
 
 {
   "rust-analyzer.linkedProjects": [
+    "examples/env/guest/Cargo.toml",
+    "examples/env/host/Cargo.toml",
     "examples/stdio/guest/Cargo.toml",
     "examples/stdio/host/Cargo.toml",
   ],
