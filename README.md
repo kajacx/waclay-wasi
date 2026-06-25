@@ -1,0 +1,33 @@
+# Wasi preview 2 binding for waclay Rust host
+
+This is an attempt to add wasi preview 2.6.0 host bindings to [waclay](https://github.com/HemantKArya/waclay) so it can run wasi components.
+
+This is an independent project and I am not affiliated with the maintainers of waclay.
+
+## Capabilities
+
+Here is an quick overview of implemented functions:
+
+Feature | Empty impl | Inherit impl | Custom impl
+--- | --- | --- | ---
+Std IO | ✔️ | ✔️ | ✔️
+Env variables | ✔️ | ✔️ | ✔️
+Cli arguments | ✔️ | ✔️ | ✔️
+Random generation | ✔️ | ✔️ | ✔️
+Clocks | ❌ | ❌ | ❌
+Filesystem | ❌ | ❌ | ❌
+Networking | ❌ | ❌ | ❌
+
+### Legend
+
+- **Empty impl** - Completely sandboxed mode - no file exists, network is disconnected, stdio is completely voided, time is stuck at 0, etc.
+- **Inherit impl** - Functionality is inherited from the host - stdout is redirected to host's std out, real file access, real env variables, etc.
+- **Custom impl** - User-defined behaviour - arbitrary bytes as inputs to stdin, seeded random generator, custom cli arguments, etc.
+
+## Goals
+
+Current target is to have Filesystem and Networking in the "Empty impl" state, and everything else fully implemented.
+
+## Usage
+
+It is too early to use this crate unfortunately, as it requires a custom fork of waclay that I haven't even published yet. But soon I will make a release once I test it in my own project.
