@@ -44,32 +44,47 @@ impl WasiP2Ctx {
     pub fn inherit_environment_vars(
         &mut self,
         vars: impl IntoIterator<Item = impl AsRef<str>>,
+        mode: InsertionMode,
     ) -> &mut Self {
-        vars.into_iter().for_each(|name| {
-            if let Ok(value) = std::env::var(name.as_ref()) {
-                self.set_env_var(name.as_ref().to_string(), value);
-            }
-        });
-        self
-    }
-
-    /// Inherits all environment variables.
-    ///
-    /// **Does not clear previously set variables!** To do that, call `clear_environment_vars` beforehand.
-    pub fn inherit_environment_vars_all(&mut self) -> &mut Self {
-        std::env::vars().for_each(|(name, value)| self.set_env_var(name, value));
+        if mode == InsertionMode::RemovePrevious {
+            self.environment_vars = vars
+                .into_iter()
+                .filter_map(|name| {
+                    std::env::var(name.as_ref())
+                        .ok()
+                        .map(|value| (name.as_ref().to_string(), value))
+                })
+                .collect();
+        } else {
+            vars.into_iter().for_each(|name| {
+                if let Ok(value) = std::env::var(name.as_ref()) {
+                    self.set_env_var(
+                        name.as_ref().to_string(),
+                        value,
+                        mode == InsertionMode::Merge,
+                    );
+                }
+            });
+        }
         self
     }
 
     /// Sets provided environment variables to specified values.
-    ///
-    /// **Does not clear previously set variables!** To do that, call `clear_environment_vars` beforehand.
     pub fn set_environment_vars<K: Into<String>, V: Into<String>>(
         &mut self,
         vars: impl IntoIterator<Item = (K, V)>,
+        mode: InsertionMode,
     ) -> &mut Self {
-        vars.into_iter()
-            .for_each(|(name, value)| self.set_env_var(name.into(), value.into()));
+        if mode == InsertionMode::RemovePrevious {
+            self.environment_vars = vars
+                .into_iter()
+                .map(|(name, value)| (name.into(), value.into()))
+                .collect();
+        } else {
+            vars.into_iter().for_each(|(name, value)| {
+                self.set_env_var(name.into(), value.into(), mode == InsertionMode::Merge)
+            });
+        }
         self
     }
 
@@ -78,10 +93,12 @@ impl WasiP2Ctx {
         self
     }
 
-    fn set_env_var(&mut self, name: String, value: String) {
+    fn set_env_var(&mut self, name: String, value: String, replace_old: bool) {
         let existing = self.environment_vars.iter_mut().find(|(n, _)| n == &name);
         if let Some(existing) = existing {
-            existing.1 = value;
+            if replace_old {
+                existing.1 = value;
+            }
         } else {
             self.environment_vars.push((name, value));
         }
@@ -94,8 +111,8 @@ impl WasiP2Ctx {
         self
     }
 
-    pub fn set_program_name(&mut self, name: String) -> &mut Self {
-        self.program_name = name;
+    pub fn set_program_name(&mut self, name: impl Into<String>) -> &mut Self {
+        self.program_name = name.into();
         self
     }
 
@@ -197,5 +214,24 @@ impl AsWasiP2Ctx for WasiP2Ctx {
 
     fn as_wasi_mut(&mut self) -> &mut WasiP2Ctx {
         self
+    }
+}
+
+/// Determines whether or not to remove previous values when inserting new ones.
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub enum InsertionMode {
+    /// Remove all previous values before appending new ones.
+    RemovePrevious,
+
+    /// Insert all new values, replacing only conflicting values. Default behaviour.
+    Merge,
+
+    /// Insert only new values, skipping over conflicting ones.
+    AppendOnly,
+}
+
+impl Default for InsertionMode {
+    fn default() -> Self {
+        Self::Merge
     }
 }

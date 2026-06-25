@@ -14,5 +14,5 @@ wasm-tools component wit guest/target/wasm32-wasip2/debug/example_env_guest.wasm
 wit-bindgen-wcl ./env.wit ./host/src/bindings.rs
 
 cd host
-ENV1=var1 ENV2=var2 cargo run arg1 arg2
+ENV1=value1 ENV2=value2 cargo run arg1 arg2
 cd ..

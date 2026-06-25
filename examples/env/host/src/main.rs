@@ -27,7 +27,7 @@ pub fn main() {
     let mut store = Store::new(
         &engine,
         StoreData {
-            ctx: waclay_wasi::WasiP2Ctx::new(),
+            ctx: WasiP2Ctx::new(),
         },
     );
 
@@ -35,31 +35,100 @@ pub fn main() {
     waclay_wasi::add_to_linker(&mut linker, &mut store).unwrap();
 
     let component = Component::new(&engine, WASM).unwrap();
-    let instance = linker.instantiate(&mut store, &component).unwrap();
 
-    let get_get_env_var_all =
-        bindings::exports_funcs::get_get_env_var_all(&instance, &mut store).unwrap();
-    // let get_get_env_var = bindings::exports_funcs::get_get_env_var(&instance, &mut store).unwrap();
-    let get_get_program_name =
-        bindings::exports_funcs::get_get_program_name(&instance, &mut store).unwrap();
-    let get_get_cli_args =
-        bindings::exports_funcs::get_get_cli_args(&instance, &mut store).unwrap();
+    // PROBLEM!!!
+    // Wasi will fetch the env vars ONCE on startup / when they are requested,
+    // and will not re-fetch them on subsequent queries.
+    // So we have to re-do the instance and re-fetch the exports for every use case.
 
     // Ignoring std io and pretending it's closed is already the default behaviour,
     // but you can call "clear" methods to make sure in case wasi ctx was modified before.
 
-    let env_all = get_get_env_var_all.call(&mut store, ()).unwrap();
+    let instance = linker.instantiate(&mut store, &component).unwrap();
+
+    let get_env_var_all =
+        bindings::exports_funcs::get_get_env_var_all(&instance, &mut store).unwrap();
+    let get_program_name =
+        bindings::exports_funcs::get_get_program_name(&instance, &mut store).unwrap();
+    let get_cli_args = bindings::exports_funcs::get_get_cli_args(&instance, &mut store).unwrap();
+
+    let env_all = get_env_var_all.call(&mut store, ()).unwrap();
     assert_eq!(env_all, vec![]);
 
-    let name = get_get_program_name.call(&mut store, ()).unwrap();
+    let name = get_program_name.call(&mut store, ()).unwrap();
     assert_eq!(name, "");
 
-    let args = get_get_cli_args.call(&mut store, ()).unwrap();
+    let args = get_cli_args.call(&mut store, ()).unwrap();
     assert_eq!(args, Vec::<String>::new());
 
-    // Inherit all environment variables and arguments from host
+    // Inherit environment variables and arguments from host
 
-    // Inherit only some environment vars
+    store
+        .data_mut()
+        .as_wasi_mut()
+        .clear_all()
+        .inherit_environment_vars(["ENV1"], waclay_wasi::InsertionMode::Merge)
+        .inherit_program_name()
+        .inherit_cli_arguments();
+
+    let instance = linker.instantiate(&mut store, &component).unwrap();
+
+    let get_env_var = bindings::exports_funcs::get_get_env_var(&instance, &mut store).unwrap();
+    let get_program_name =
+        bindings::exports_funcs::get_get_program_name(&instance, &mut store).unwrap();
+    let get_cli_args = bindings::exports_funcs::get_get_cli_args(&instance, &mut store).unwrap();
+
+    let env1 = get_env_var.call(&mut store, "ENV1".to_string()).unwrap();
+    assert_eq!(env1, Some("value1".to_string()));
+
+    let env2 = get_env_var.call(&mut store, "ENV2".to_string()).unwrap();
+    assert_eq!(env2, None);
+
+    let program_name = get_program_name.call(&mut store, ()).unwrap();
+    assert!(
+        [
+            "target\\debug\\example-stdio-host.exe",
+            "target/debug/example-stdio-host"
+        ]
+        .contains(&program_name.as_str()),
+        "Unexpected program name: {program_name}"
+    );
+
+    let args = get_cli_args.call(&mut store, ()).unwrap();
+    assert_eq!(args, vec!["arg1".to_string(), "arg2".to_string()]);
 
     // Set custom environment vars and arguments
+
+    store
+        .data_mut()
+        .as_wasi_mut()
+        .clear_all()
+        .set_environment_vars(
+            [("CUSTOM1", "custom_value1")],
+            waclay_wasi::InsertionMode::Merge,
+        )
+        .set_program_name("waclay_guest")
+        .set_cli_arguments(["custom_arg1", "custom_arg2"]);
+
+    let instance = linker.instantiate(&mut store, &component).unwrap();
+
+    let get_env_var = bindings::exports_funcs::get_get_env_var(&instance, &mut store).unwrap();
+    let get_program_name =
+        bindings::exports_funcs::get_get_program_name(&instance, &mut store).unwrap();
+    let get_cli_args = bindings::exports_funcs::get_get_cli_args(&instance, &mut store).unwrap();
+
+    let env1 = get_env_var.call(&mut store, "CUSTOM1".to_string()).unwrap();
+    assert_eq!(env1, Some("custom_value1".to_string()));
+
+    let env2 = get_env_var.call(&mut store, "ENV2".to_string()).unwrap();
+    assert_eq!(env2, None);
+
+    let program_name = get_program_name.call(&mut store, ()).unwrap();
+    assert_eq!(program_name, "waclay_guest");
+
+    let args = get_cli_args.call(&mut store, ()).unwrap();
+    assert_eq!(
+        args,
+        vec!["custom_arg1".to_string(), "custom_arg2".to_string()]
+    );
 }
