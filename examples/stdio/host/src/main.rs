@@ -14,7 +14,7 @@ struct StoreData {
 }
 
 impl AsWasiP2Ctx for StoreData {
-    fn as_wasi_ctx(&self) -> &WasiP2Ctx {
+    fn as_wasi_ref(&self) -> &WasiP2Ctx {
         &self.ctx
     }
 
@@ -105,7 +105,7 @@ pub fn main() {
 
     let stdout_captured_bytes = &store
         .data()
-        .as_wasi_ctx()
+        .as_wasi_ref()
         .stdout
         .as_any()
         .downcast_ref::<CapturingOutputStream>()
@@ -118,7 +118,7 @@ pub fn main() {
 
     let stderr_captured_bytes = &store
         .data()
-        .as_wasi_ctx()
+        .as_wasi_ref()
         .stderr
         .as_any()
         .downcast_ref::<CapturingOutputStream>()

@@ -511,6 +511,7 @@ pub trait StreamsHost {
 /// Host trait for interface: wasi:cli/environment@0.2.6
 pub trait EnvironmentHost {
     fn get_environment(&mut self) -> Vec<(String, String)>;
+    fn get_arguments(&mut self) -> Vec<String>;
 }
 
 /// Host trait for interface: wasi:cli/exit@0.2.6
@@ -811,6 +812,21 @@ pub mod imports {
                 ),
             )
             .context("Failed to define get-environment function")?;
+
+        host_interface
+            .define_func(
+                "get-arguments",
+                Func::new(
+                    &mut *store,
+                    FuncType::new([], [ValueType::List(ListType::new(ValueType::String))]),
+                    |mut ctx, params, results| {
+                        let result = ctx.data_mut().get_arguments();
+                        results[0] = result.into_value(ctx.as_context_mut())?;
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define get-arguments function")?;
 
         Ok(())
     }
