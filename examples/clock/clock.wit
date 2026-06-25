@@ -1,0 +1,13 @@
+package waclay-wasi:examples@0.1.0;
+
+interface funcs {
+    /// Time elapsed since unix epoch in seconds
+    get-wall-clock: func() -> u64;
+
+    /// Time elapsed in the function in nanoseconds
+    get-time-elapsed: func() -> u64;
+}
+
+world clock {
+    export funcs;
+}
