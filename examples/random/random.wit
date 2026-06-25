@@ -1,0 +1,9 @@
+package waclay-wasi:examples@0.1.0;
+
+interface funcs {
+    get-random-bytes: func(len: u32) -> list<u8>;
+}
+
+world env {
+    export funcs;
+}

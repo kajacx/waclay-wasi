@@ -5,5 +5,10 @@
     "examples/env/host/Cargo.toml",
     "examples/stdio/guest/Cargo.toml",
     "examples/stdio/host/Cargo.toml",
+    "examples/random/guest/Cargo.toml",
+    "examples/random/host/Cargo.toml",
+  ],
+  "cSpell.words": [
+    "getrandom"
   ],
 }

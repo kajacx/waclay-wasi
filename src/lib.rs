@@ -1,3 +1,6 @@
+pub use getrandom;
+pub use simple_rng;
+
 pub use waclay::*;
 
 mod wasi_p2_ctx;

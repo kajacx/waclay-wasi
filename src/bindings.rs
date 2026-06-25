@@ -555,6 +555,11 @@ pub trait TerminalStderrHost {
     fn get_terminal_stderr(&mut self) -> Option<crate::WasiP2TerminalOutputResource>;
 }
 
+/// Host trait for interface: wasi:random/random@0.2.6
+pub trait RandomHost {
+    fn get_random_u64(&mut self) -> u64;
+}
+
 pub mod imports {
     use super::*;
 
@@ -1079,6 +1084,32 @@ pub mod imports {
                 ),
             )
             .context("Failed to define get-terminal-stderr function")?;
+
+        Ok(())
+    }
+
+    pub fn register_random_host<T: RandomHost + 'static, E: backend::WasmEngine>(
+        linker: &mut Linker,
+        store: &mut Store<T, E>,
+    ) -> Result<()> {
+        let host_interface = linker
+            .define_instance("wasi:random/random@0.2.6".try_into().unwrap())
+            .context("Failed to define host interface")?;
+
+        host_interface
+            .define_func(
+                "get-random-u64",
+                Func::new(
+                    &mut *store,
+                    FuncType::new([], [ValueType::U64]),
+                    |mut ctx, params, results| {
+                        let result = ctx.data_mut().get_random_u64();
+                        results[0] = Value::U64(result);
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define get-random-u64 function")?;
 
         Ok(())
     }

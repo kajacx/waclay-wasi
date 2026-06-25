@@ -4,6 +4,7 @@ mod environment_vars;
 mod error;
 mod exit;
 mod poll;
+mod random;
 mod stderr;
 mod stdin;
 mod stdout;
@@ -24,6 +25,7 @@ pub fn add_to_linker<S: AsWasiP2Ctx + 'static, E: wasm_runtime_layer::backend::W
     bindings::imports::register_error_host(linker, store)?;
     bindings::imports::register_exit_host(linker, store)?;
     bindings::imports::register_poll_host(linker, store)?;
+    bindings::imports::register_random_host(linker, store)?;
     bindings::imports::register_stdin_host(linker, store)?;
     bindings::imports::register_stdout_host(linker, store)?;
     bindings::imports::register_stderr_host(linker, store)?;

@@ -1,0 +1,11 @@
+[package]
+name = "example-random-guest"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wit-bindgen = { version = "0.58" }
+getrandom = { version = "0.4" }

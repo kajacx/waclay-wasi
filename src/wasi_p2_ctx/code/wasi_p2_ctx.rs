@@ -1,4 +1,5 @@
 use crate::*;
+use simple_rng::*;
 
 pub struct WasiP2Ctx {
     pub environment_vars: Vec<(String, String)>,
@@ -13,6 +14,8 @@ pub struct WasiP2Ctx {
     pub stdin: Box<dyn WasiP2InputStream>,
     pub stdout: Box<dyn WasiP2OutputStream>,
     pub stderr: Box<dyn WasiP2OutputStream>,
+
+    pub rng: RNG,
 }
 
 impl WasiP2Ctx {
@@ -24,6 +27,7 @@ impl WasiP2Ctx {
             stdin: Box::new(internal::InputStreamEmpty {}),
             stdout: Box::new(internal::OutputStreamEmpty {}),
             stderr: Box::new(internal::OutputStreamEmpty {}),
+            rng: RNG::new(DEFAULT_SEED),
         }
     }
 
@@ -34,6 +38,7 @@ impl WasiP2Ctx {
             .clear_stdout()
             .clear_stderr()
             .clear_environment_vars()
+            .clear_rng()
     }
 
     // Environment variables
@@ -199,6 +204,28 @@ impl WasiP2Ctx {
         self.stderr = Box::new(internal::OutputStreamEmpty {});
         self
     }
+
+    // Rng
+
+    /// This doesn't redirect every RNG request to the host/OS.
+    /// It simply resets the RNG generator with a "genuinely" random seed.
+    ///
+    /// This returns an error if the underlying "os level" function fails.
+    pub fn inherit_rng(&mut self) -> Result<&mut Self, getrandom::Error> {
+        self.rng = RNG::new(getrandom::u64()?);
+        Ok(self)
+    }
+
+    pub fn set_rng(&mut self, seed: u64) -> &mut Self {
+        self.rng = RNG::new(seed);
+        self
+    }
+
+    /// Resets the rng generator with the default seed.
+    pub fn clear_rng(&mut self) -> &mut Self {
+        self.rng = RNG::new(DEFAULT_SEED);
+        self
+    }
 }
 
 pub trait AsWasiP2Ctx {
@@ -235,3 +262,5 @@ impl Default for InsertionMode {
         Self::Merge
     }
 }
+
+const DEFAULT_SEED: u64 = 3_141_592_653_589_793_238u64;
