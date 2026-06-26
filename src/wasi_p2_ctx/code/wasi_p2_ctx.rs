@@ -1,4 +1,4 @@
-use crate::*;
+use crate::{internal::EmptyMonotonicClock, *};
 use simple_rng::*;
 
 pub struct WasiP2Ctx {
@@ -18,7 +18,31 @@ pub struct WasiP2Ctx {
     pub rng: RNG,
 
     pub wall_clock: Box<dyn WasiP2WallClock>,
-    // pub mono
+
+    /// Caution!
+    ///
+    /// Changing monotonic clock implementation while a component instance is active can lead to unexpected
+    /// shifts in the monotonic clock from the instance's perspective, even going backwards!
+    ///
+    /// The way it works is that there is a single host function "monotonic_clock:now()" that returns
+    /// the amount of nanoseconds passed since some set point in time.
+    ///
+    /// The component then grabs this number and stores it as an `instant`. It then later calls the host function again,
+    /// subtracts the previously received instance, and voila, component now has `duration` elapsed since that `instant`.
+    ///
+    /// But what happens when we change the `monotonic_clock` implementation in-between? For example, from measuring time
+    /// from 10:00 to 11:00? Let's follow a hypothetical timeline:
+    ///
+    /// - `.inherit_monotonic_clock()` is called at 10:00, which just stores that timestamp and then returns nanoseconds since that time.
+    /// - The component requests and `instant` at 10:40, getting 40 minutes worth if nanoseconds back.
+    /// - `.inherit_monotonic_clock()` is called *again* at 11:00, meaning the host will now start returning difference from that time instead.
+    /// - The component asks how much time has passed since the earlier obtained `instance` at 11:20.
+    ///
+    /// At this point, the wasi runtime will say that 20 minutes have passed from the newly set point in time (11:00), even though
+    /// earlier the monotonic clock said that 40 minutes has passed. It went back in time!
+    ///
+    /// **TL;DR:** Do not touch this while an instance is running unless you really know what you are doing.
+    pub monotonic_clock: Box<dyn WasiP2MonotonicClock>,
 }
 
 impl WasiP2Ctx {
@@ -32,6 +56,7 @@ impl WasiP2Ctx {
             stderr: Box::new(internal::OutputStreamEmpty {}),
             rng: RNG::new(DEFAULT_SEED),
             wall_clock: Box::new(internal::EmptyWallClock {}),
+            monotonic_clock: Box::new(internal::EmptyMonotonicClock {}),
         }
     }
 
@@ -43,6 +68,8 @@ impl WasiP2Ctx {
             .clear_stderr()
             .clear_environment_vars()
             .clear_rng()
+            .clear_wall_clock()
+            .clear_monotonic_clock()
     }
 
     // Environment variables
@@ -228,6 +255,63 @@ impl WasiP2Ctx {
     /// Resets the rng generator with the default seed.
     pub fn clear_rng(&mut self) -> &mut Self {
         self.rng = RNG::new(DEFAULT_SEED);
+        self
+    }
+
+    // Wall clock
+
+    pub fn inherit_wall_clock(&mut self) -> &mut Self {
+        self.wall_clock = Box::new(internal::HostWallClock {});
+        self
+    }
+
+    pub fn set_wall_clock(&mut self, wall_clock: Box<dyn WasiP2WallClock>) -> &mut Self {
+        self.wall_clock = wall_clock;
+        self
+    }
+
+    pub fn clear_wall_clock(&mut self) -> &mut Self {
+        self.wall_clock = Box::new(internal::EmptyWallClock {});
+        self
+    }
+
+    // Monotonic clock
+
+    /// Caution!
+    ///
+    /// Changing monotonic clock implementation while a component instance is active can lead to unexpected
+    /// shifts in the monotonic clock from the instance's perspective, even going backwards!
+    ///
+    /// See the `monotonic_clock` field for more detail.
+    pub fn inherit_monotonic_clock(&mut self) -> &mut Self {
+        self.monotonic_clock = Box::new(internal::HostMonotonicClock {
+            start: std::time::Instant::now(),
+        });
+        self
+    }
+
+    /// Caution!
+    ///
+    /// Changing monotonic clock implementation while a component instance is active can lead to unexpected
+    /// shifts in the monotonic clock from the instance's perspective, even going backwards!
+    ///
+    /// See the `monotonic_clock` field for more detail.
+    pub fn set_monotonic_clock(
+        &mut self,
+        monotonic_clock: Box<dyn WasiP2MonotonicClock>,
+    ) -> &mut Self {
+        self.monotonic_clock = monotonic_clock;
+        self
+    }
+
+    /// Caution!
+    ///
+    /// Changing monotonic clock implementation while a component instance is active can lead to unexpected
+    /// shifts in the monotonic clock from the instance's perspective, even going backwards!
+    ///
+    /// See the `monotonic_clock` field for more detail.
+    pub fn clear_monotonic_clock(&mut self) -> &mut Self {
+        self.monotonic_clock = Box::new(EmptyMonotonicClock {});
         self
     }
 }

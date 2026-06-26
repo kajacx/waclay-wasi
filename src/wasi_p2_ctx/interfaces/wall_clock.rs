@@ -39,19 +39,19 @@ pub(super) mod internal {
         }
     }
 
-    struct HostWallClock {}
+    pub struct HostWallClock {}
 
     impl WasiP2WallClock for HostWallClock {
         fn now(&mut self) -> bindings::Datetime {
             match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
-                Err(positive) => bindings::Datetime {
-                    seconds: positive.duration().as_secs(),
-                    nanoseconds: positive.duration().subsec_nanos(),
+                Ok(positive) => bindings::Datetime {
+                    seconds: positive.as_secs(),
+                    nanoseconds: positive.subsec_nanos(),
                 },
-                Ok(negative) => {
+                Err(negative) => {
                     eprintln!(
                         "Warning! Host OS clock reported time that is before the unix epoch, namely: {:?}",
-                        negative
+                        negative.duration()
                     );
                     eprintln!(
                         "Such time cannot be represented in the wasi Datetime structure, returning 0 (Jan 1st, 1970) instead."
