@@ -11,8 +11,8 @@ pub trait WasiP2MonotonicClock: std::fmt::Debug {
 }
 
 impl<T: AsWasiP2Ctx> crate::bindings::MonotonicClockHost for T {
-    fn now(&mut self) -> bindings::Instant {
-        self.as_wasi_mut().monotonic_clock.now()
+    fn now(&mut self) -> anyhow::Result<bindings::Instant> {
+        Ok(self.as_wasi_mut().monotonic_clock.now())
     }
 }
 

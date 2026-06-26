@@ -65,5 +65,21 @@ pub mod exports_funcs {
             .typed::<(), String>()
     }
 
+    #[allow(clippy::type_complexity)]
+    pub fn get_exit<T, E: backend::WasmEngine>(
+        instance: &Instance,
+        _store: &mut Store<T, E>,
+    ) -> Result<TypedFunc<(), ()>> {
+        let interface = instance
+            .exports()
+            .instance(&INTERFACE_NAME.try_into().unwrap())
+            .ok_or_else(|| anyhow!("Interface not found"))?;
+
+        interface
+            .func("exit")
+            .ok_or_else(|| anyhow!("Function 'exit' not found"))?
+            .typed::<(), ()>()
+    }
+
 }
 

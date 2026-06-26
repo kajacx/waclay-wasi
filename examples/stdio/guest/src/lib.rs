@@ -29,4 +29,13 @@ impl bindings::exports::waclay_wasi::examples::funcs::Guest for GuestComponent {
         let line = buffer.trim_end();
         format!("[Rust guest reading stdin]: {line}")
     }
+
+    #[allow(unreachable_code)]
+    fn exit() {
+        std::process::exit(1);
+
+        // We are abusing the fact that the test setup will compare stdout output to an exact file
+        // to test that this will not be called.
+        println!("This message will not be shown.");
+    }
 }

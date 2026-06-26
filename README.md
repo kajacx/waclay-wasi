@@ -15,8 +15,14 @@ Env variables | ✔️ | ✔️ | ✔️
 Cli arguments | ✔️ | ✔️ | ✔️
 Random generation | ✔️ | ✔️ | ✔️
 Clocks | ✔️ | ✔️ | ✔️
+Terminal* | ✔️ | ❌ | ❌
 Filesystem | ❌ | ❌ | ❌
 Networking | ❌ | ❌ | ❌
+
+*) Terminal is NOT std in/out/err. It is a separate interface for detecting if a process is connected to a real terminal screen
+for the purpose for setting colors, formatting output based on screen width, etc.
+
+For now, `waclay-wasi` will just tell the component that it is not connected to a terminal.
 
 ### Legend
 

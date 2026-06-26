@@ -4,6 +4,7 @@ interface funcs {
     print-stdout: func(text: string);
     print-stderr: func(text: string);
     read-stdin: func() -> string;
+    exit: func();
 }
 
 world stdio {

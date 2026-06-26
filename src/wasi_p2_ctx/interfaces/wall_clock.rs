@@ -11,8 +11,8 @@ pub trait WasiP2WallClock: std::fmt::Debug {
 }
 
 impl<T: AsWasiP2Ctx> crate::bindings::WallClockHost for T {
-    fn now(&mut self) -> bindings::Datetime {
-        self.as_wasi_mut().wall_clock.now()
+    fn now(&mut self) -> anyhow::Result<bindings::Datetime> {
+        Ok(self.as_wasi_mut().wall_clock.now())
     }
 }
 

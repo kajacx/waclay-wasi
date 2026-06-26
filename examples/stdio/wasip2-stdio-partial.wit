@@ -105,5 +105,7 @@ package waclay-wasi:examples@0.1.0 {
     print-stderr: func(text: string);
 
     read-stdin: func() -> string;
+
+    exit: func();
   }
 }

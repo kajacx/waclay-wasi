@@ -35,27 +35,27 @@ impl<T: AsWasiP2Ctx> crate::bindings::StreamsHost for T {
         &mut self,
         _self_: WasiP2InputStreamResource,
         len: u64,
-    ) -> Result<Vec<u8>, bindings::StreamError> {
-        self.as_wasi_mut().stdin.input_stream_blocking_read(len)
+    ) -> anyhow::Result<Result<Vec<u8>, bindings::StreamError>> {
+        Ok(self.as_wasi_mut().stdin.input_stream_blocking_read(len))
     }
 
     fn input_stream_subscribe(
         &mut self,
         _self_: WasiP2InputStreamResource,
-    ) -> WasiP2PollableResource {
-        WasiP2PollableResource {}
+    ) -> anyhow::Result<WasiP2PollableResource> {
+        Ok(WasiP2PollableResource {})
     }
 
     fn output_stream_check_write(
         &mut self,
         self_: WasiP2OutputStreamResource,
-    ) -> Result<u64, bindings::StreamError> {
+    ) -> anyhow::Result<Result<u64, bindings::StreamError>> {
         match self_ {
             WasiP2OutputStreamResource::Stdout => {
-                self.as_wasi_mut().stdout.output_stream_check_write()
+                Ok(self.as_wasi_mut().stdout.output_stream_check_write())
             }
             WasiP2OutputStreamResource::Stderr => {
-                self.as_wasi_mut().stderr.output_stream_check_write()
+                Ok(self.as_wasi_mut().stderr.output_stream_check_write())
             }
         }
     }
@@ -64,14 +64,13 @@ impl<T: AsWasiP2Ctx> crate::bindings::StreamsHost for T {
         &mut self,
         self_: WasiP2OutputStreamResource,
         contents: Vec<u8>,
-    ) -> Result<(), bindings::StreamError> {
+    ) -> anyhow::Result<Result<(), bindings::StreamError>> {
         match self_ {
-            // TODO: better error handling
             WasiP2OutputStreamResource::Stdout => {
-                self.as_wasi_mut().stdout.output_stream_write(contents)
+                Ok(self.as_wasi_mut().stdout.output_stream_write(contents))
             }
             WasiP2OutputStreamResource::Stderr => {
-                self.as_wasi_mut().stderr.output_stream_write(contents)
+                Ok(self.as_wasi_mut().stderr.output_stream_write(contents))
             }
         }
     }
@@ -79,15 +78,15 @@ impl<T: AsWasiP2Ctx> crate::bindings::StreamsHost for T {
     fn output_stream_blocking_flush(
         &mut self,
         _self_: WasiP2OutputStreamResource,
-    ) -> Result<(), bindings::StreamError> {
-        Ok(())
+    ) -> anyhow::Result<Result<(), bindings::StreamError>> {
+        Ok(Ok(()))
     }
 
     fn output_stream_subscribe(
         &mut self,
         _self_: WasiP2OutputStreamResource,
-    ) -> WasiP2PollableResource {
-        WasiP2PollableResource {}
+    ) -> anyhow::Result<WasiP2PollableResource> {
+        Ok(WasiP2PollableResource {})
     }
 }
 

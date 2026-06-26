@@ -550,7 +550,7 @@ impl UnaryComponentType for Datetime {}
 
 /// Host trait for interface: wasi:io/poll@0.2.6
 pub trait PollHost {
-    fn pollable_block(&mut self, self_: crate::WasiP2PollableResource) -> ();
+    fn pollable_block(&mut self, self_: crate::WasiP2PollableResource) -> anyhow::Result<()>;
 }
 
 /// Host trait for interface: wasi:io/error@0.2.6
@@ -562,42 +562,48 @@ pub trait StreamsHost {
         &mut self,
         self_: crate::WasiP2InputStreamResource,
         len: u64,
-    ) -> Result<Vec<u8>, StreamError>;
-    fn input_stream_subscribe(&mut self, self_: crate::WasiP2InputStreamResource) -> crate::WasiP2PollableResource;
-    fn output_stream_check_write(&mut self, self_: crate::WasiP2OutputStreamResource) -> Result<u64, StreamError>;
+    ) -> anyhow::Result<Result<Vec<u8>, StreamError>>;
+    fn input_stream_subscribe(&mut self, self_: crate::WasiP2InputStreamResource) -> anyhow::Result<crate::WasiP2PollableResource>;
+    fn output_stream_check_write(
+        &mut self,
+        self_: crate::WasiP2OutputStreamResource,
+    ) -> anyhow::Result<Result<u64, StreamError>>;
     fn output_stream_write(
         &mut self,
         self_: crate::WasiP2OutputStreamResource,
         contents: Vec<u8>,
-    ) -> Result<(), StreamError>;
-    fn output_stream_blocking_flush(&mut self, self_: crate::WasiP2OutputStreamResource) -> Result<(), StreamError>;
-    fn output_stream_subscribe(&mut self, self_: crate::WasiP2OutputStreamResource) -> crate::WasiP2PollableResource;
+    ) -> anyhow::Result<Result<(), StreamError>>;
+    fn output_stream_blocking_flush(
+        &mut self,
+        self_: crate::WasiP2OutputStreamResource,
+    ) -> anyhow::Result<Result<(), StreamError>>;
+    fn output_stream_subscribe(&mut self, self_: crate::WasiP2OutputStreamResource) -> anyhow::Result<crate::WasiP2PollableResource>;
 }
 
 /// Host trait for interface: wasi:cli/environment@0.2.6
 pub trait EnvironmentHost {
-    fn get_environment(&mut self) -> Vec<(String, String)>;
-    fn get_arguments(&mut self) -> Vec<String>;
+    fn get_environment(&mut self) -> anyhow::Result<Vec<(String, String)>>;
+    fn get_arguments(&mut self) -> anyhow::Result<Vec<String>>;
 }
 
 /// Host trait for interface: wasi:cli/exit@0.2.6
 pub trait ExitHost {
-    fn exit(&mut self, status: Result<(), ()>) -> ();
+    fn exit(&mut self, status: Result<(), ()>) -> anyhow::Result<()>;
 }
 
 /// Host trait for interface: wasi:cli/stdin@0.2.6
 pub trait StdinHost {
-    fn get_stdin(&mut self) -> crate::WasiP2InputStreamResource;
+    fn get_stdin(&mut self) -> anyhow::Result<crate::WasiP2InputStreamResource>;
 }
 
 /// Host trait for interface: wasi:cli/stdout@0.2.6
 pub trait StdoutHost {
-    fn get_stdout(&mut self) -> crate::WasiP2OutputStreamResource;
+    fn get_stdout(&mut self) -> anyhow::Result<crate::WasiP2OutputStreamResource>;
 }
 
 /// Host trait for interface: wasi:cli/stderr@0.2.6
 pub trait StderrHost {
-    fn get_stderr(&mut self) -> crate::WasiP2OutputStreamResource;
+    fn get_stderr(&mut self) -> anyhow::Result<crate::WasiP2OutputStreamResource>;
 }
 
 /// Host trait for interface: wasi:cli/terminal-input@0.2.6
@@ -608,32 +614,32 @@ pub trait TerminalOutputHost {}
 
 /// Host trait for interface: wasi:cli/terminal-stdin@0.2.6
 pub trait TerminalStdinHost {
-    fn get_terminal_stdin(&mut self) -> Option<crate::WasiP2TerminalInputResource>;
+    fn get_terminal_stdin(&mut self) -> anyhow::Result<Option<crate::WasiP2TerminalInputResource>>;
 }
 
 /// Host trait for interface: wasi:cli/terminal-stdout@0.2.6
 pub trait TerminalStdoutHost {
-    fn get_terminal_stdout(&mut self) -> Option<crate::WasiP2TerminalOutputResource>;
+    fn get_terminal_stdout(&mut self) -> anyhow::Result<Option<crate::WasiP2TerminalOutputResource>>;
 }
 
 /// Host trait for interface: wasi:cli/terminal-stderr@0.2.6
 pub trait TerminalStderrHost {
-    fn get_terminal_stderr(&mut self) -> Option<crate::WasiP2TerminalOutputResource>;
+    fn get_terminal_stderr(&mut self) -> anyhow::Result<Option<crate::WasiP2TerminalOutputResource>>;
 }
 
 /// Host trait for interface: wasi:random/random@0.2.6
 pub trait RandomHost {
-    fn get_random_u64(&mut self) -> u64;
+    fn get_random_u64(&mut self) -> anyhow::Result<u64>;
 }
 
 /// Host trait for interface: wasi:clocks/monotonic-clock@0.2.6
 pub trait MonotonicClockHost {
-    fn now(&mut self) -> Instant;
+    fn now(&mut self) -> anyhow::Result<Instant>;
 }
 
 /// Host trait for interface: wasi:clocks/wall-clock@0.2.6
 pub trait WallClockHost {
-    fn now(&mut self) -> Datetime;
+    fn now(&mut self) -> anyhow::Result<Datetime>;
 }
 
 pub mod imports {
@@ -667,7 +673,7 @@ pub mod imports {
                     FuncType::new([ValueType::Borrow(crate::WasiP2PollableResource::resource_type())], []),
                     |mut ctx, params, _results| {
                         let self_ = crate::WasiP2PollableResource::from_value(&params[0], ctx.as_context())?;
-                        ctx.data_mut().pollable_block(self_);
+                        ctx.data_mut().pollable_block(self_)?;
                         Ok(())
                     },
                 ),
@@ -747,7 +753,7 @@ pub mod imports {
                         } else {
                             bail!("Expected u64")
                         };
-                        let result = ctx.data_mut().input_stream_blocking_read(self_, len);
+                        let result = ctx.data_mut().input_stream_blocking_read(self_, len)?;
                         results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
@@ -766,7 +772,7 @@ pub mod imports {
                     ),
                     |mut ctx, params, results| {
                         let self_ = crate::WasiP2InputStreamResource::from_value(&params[0], ctx.as_context())?;
-                        let result = ctx.data_mut().input_stream_subscribe(self_);
+                        let result = ctx.data_mut().input_stream_subscribe(self_)?;
                         results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
@@ -788,7 +794,7 @@ pub mod imports {
                     ),
                     |mut ctx, params, results| {
                         let self_ = crate::WasiP2OutputStreamResource::from_value(&params[0], ctx.as_context())?;
-                        let result = ctx.data_mut().output_stream_check_write(self_);
+                        let result = ctx.data_mut().output_stream_check_write(self_)?;
                         results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
@@ -814,7 +820,7 @@ pub mod imports {
                     |mut ctx, params, results| {
                         let self_ = crate::WasiP2OutputStreamResource::from_value(&params[0], ctx.as_context())?;
                         let contents = Vec::<u8>::from_value(&params[1], ctx.as_context())?;
-                        let result = ctx.data_mut().output_stream_write(self_, contents);
+                        let result = ctx.data_mut().output_stream_write(self_, contents)?;
                         results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
@@ -836,7 +842,7 @@ pub mod imports {
                     ),
                     |mut ctx, params, results| {
                         let self_ = crate::WasiP2OutputStreamResource::from_value(&params[0], ctx.as_context())?;
-                        let result = ctx.data_mut().output_stream_blocking_flush(self_);
+                        let result = ctx.data_mut().output_stream_blocking_flush(self_)?;
                         results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
@@ -855,7 +861,7 @@ pub mod imports {
                     ),
                     |mut ctx, params, results| {
                         let self_ = crate::WasiP2OutputStreamResource::from_value(&params[0], ctx.as_context())?;
-                        let result = ctx.data_mut().output_stream_subscribe(self_);
+                        let result = ctx.data_mut().output_stream_subscribe(self_)?;
                         results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
@@ -886,7 +892,7 @@ pub mod imports {
                         )))],
                     ),
                     |mut ctx, params, results| {
-                        let result = ctx.data_mut().get_environment();
+                        let result = ctx.data_mut().get_environment()?;
                         results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
@@ -901,7 +907,7 @@ pub mod imports {
                     &mut *store,
                     FuncType::new([], [ValueType::List(ListType::new(ValueType::String))]),
                     |mut ctx, params, results| {
-                        let result = ctx.data_mut().get_arguments();
+                        let result = ctx.data_mut().get_arguments()?;
                         results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
@@ -928,7 +934,7 @@ pub mod imports {
                     FuncType::new([ValueType::Result(ResultType::new(None, None))], []),
                     |mut ctx, params, _results| {
                         let status = Result::<(), ()>::from_value(&params[0], ctx.as_context())?;
-                        ctx.data_mut().exit(status);
+                        ctx.data_mut().exit(status)?;
                         Ok(())
                     },
                 ),
@@ -953,7 +959,7 @@ pub mod imports {
                     &mut *store,
                     FuncType::new([], [ValueType::Own(crate::WasiP2InputStreamResource::resource_type())]),
                     |mut ctx, params, results| {
-                        let result = ctx.data_mut().get_stdin();
+                        let result = ctx.data_mut().get_stdin()?;
                         results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
@@ -979,7 +985,7 @@ pub mod imports {
                     &mut *store,
                     FuncType::new([], [ValueType::Own(crate::WasiP2OutputStreamResource::resource_type())]),
                     |mut ctx, params, results| {
-                        let result = ctx.data_mut().get_stdout();
+                        let result = ctx.data_mut().get_stdout()?;
                         results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
@@ -1005,7 +1011,7 @@ pub mod imports {
                     &mut *store,
                     FuncType::new([], [ValueType::Own(crate::WasiP2OutputStreamResource::resource_type())]),
                     |mut ctx, params, results| {
-                        let result = ctx.data_mut().get_stderr();
+                        let result = ctx.data_mut().get_stderr()?;
                         results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
@@ -1085,7 +1091,7 @@ pub mod imports {
                         )))],
                     ),
                     |mut ctx, params, results| {
-                        let result = ctx.data_mut().get_terminal_stdin();
+                        let result = ctx.data_mut().get_terminal_stdin()?;
                         results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
@@ -1119,7 +1125,7 @@ pub mod imports {
                         )))],
                     ),
                     |mut ctx, params, results| {
-                        let result = ctx.data_mut().get_terminal_stdout();
+                        let result = ctx.data_mut().get_terminal_stdout()?;
                         results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
@@ -1153,7 +1159,7 @@ pub mod imports {
                         )))],
                     ),
                     |mut ctx, params, results| {
-                        let result = ctx.data_mut().get_terminal_stderr();
+                        let result = ctx.data_mut().get_terminal_stderr()?;
                         results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
@@ -1179,7 +1185,7 @@ pub mod imports {
                     &mut *store,
                     FuncType::new([], [ValueType::U64]),
                     |mut ctx, params, results| {
-                        let result = ctx.data_mut().get_random_u64();
+                        let result = ctx.data_mut().get_random_u64()?;
                         results[0] = Value::U64(result);
                         Ok(())
                     },
@@ -1208,7 +1214,7 @@ pub mod imports {
                     &mut *store,
                     FuncType::new([], [Instant::ty()]),
                     |mut ctx, params, results| {
-                        let result = ctx.data_mut().now();
+                        let result = ctx.data_mut().now()?;
                         results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
@@ -1234,7 +1240,7 @@ pub mod imports {
                     &mut *store,
                     FuncType::new([], [Datetime::ty()]),
                     |mut ctx, params, results| {
-                        let result = ctx.data_mut().now();
+                        let result = ctx.data_mut().now()?;
                         results[0] = result.into_value(ctx.as_context_mut())?;
                         Ok(())
                     },
