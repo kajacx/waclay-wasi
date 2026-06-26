@@ -2,7 +2,7 @@ use std::any::Any;
 
 use crate::*;
 
-pub trait WasiP2MonotonicClock {
+pub trait WasiP2MonotonicClock: std::fmt::Debug {
     fn now(&mut self) -> bindings::Instant;
 
     fn as_any(&self) -> &dyn Any;
@@ -19,6 +19,7 @@ impl<T: AsWasiP2Ctx> crate::bindings::MonotonicClockHost for T {
 pub(super) mod internal {
     use super::*;
 
+    #[derive(Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
     pub struct EmptyMonotonicClock {}
 
     impl WasiP2MonotonicClock for EmptyMonotonicClock {
@@ -35,6 +36,7 @@ pub(super) mod internal {
         }
     }
 
+    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
     pub struct HostMonotonicClock {
         /// Caution!
         ///

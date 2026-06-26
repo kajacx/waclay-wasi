@@ -44,7 +44,7 @@ pub fn add_to_linker<S: AsWasiP2Ctx + 'static, E: wasm_runtime_layer::backend::W
     Ok(())
 }
 
-pub mod internal {
+pub(super) mod internal {
     pub use super::monotonic_clock::internal::*;
     pub use super::streams::internal::*;
     pub use super::wall_clock::internal::*;

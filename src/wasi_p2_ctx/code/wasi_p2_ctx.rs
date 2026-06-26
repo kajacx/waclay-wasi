@@ -1,6 +1,7 @@
-use crate::{internal::EmptyMonotonicClock, *};
+use crate::*;
 use simple_rng::*;
 
+#[derive(Debug)]
 pub struct WasiP2Ctx {
     pub environment_vars: Vec<(String, String)>,
 
@@ -15,7 +16,7 @@ pub struct WasiP2Ctx {
     pub stdout: Box<dyn WasiP2OutputStream>,
     pub stderr: Box<dyn WasiP2OutputStream>,
 
-    pub rng: RNG,
+    pub rng: internal::DebugRng,
 
     pub wall_clock: Box<dyn WasiP2WallClock>,
 
@@ -54,7 +55,7 @@ impl WasiP2Ctx {
             stdin: Box::new(internal::InputStreamEmpty {}),
             stdout: Box::new(internal::OutputStreamEmpty {}),
             stderr: Box::new(internal::OutputStreamEmpty {}),
-            rng: RNG::new(DEFAULT_SEED),
+            rng: internal::DebugRng(RNG::new(DEFAULT_SEED)),
             wall_clock: Box::new(internal::EmptyWallClock {}),
             monotonic_clock: Box::new(internal::EmptyMonotonicClock {}),
         }
@@ -243,18 +244,18 @@ impl WasiP2Ctx {
     ///
     /// This returns an error if the underlying "os level" function fails.
     pub fn inherit_rng(&mut self) -> Result<&mut Self, getrandom::Error> {
-        self.rng = RNG::new(getrandom::u64()?);
+        self.rng = internal::DebugRng(RNG::new(getrandom::u64()?));
         Ok(self)
     }
 
     pub fn set_rng(&mut self, seed: u64) -> &mut Self {
-        self.rng = RNG::new(seed);
+        self.rng = internal::DebugRng(RNG::new(seed));
         self
     }
 
     /// Resets the rng generator with the default seed.
     pub fn clear_rng(&mut self) -> &mut Self {
-        self.rng = RNG::new(DEFAULT_SEED);
+        self.rng = internal::DebugRng(RNG::new(DEFAULT_SEED));
         self
     }
 
@@ -311,7 +312,7 @@ impl WasiP2Ctx {
     ///
     /// See the `monotonic_clock` field for more detail.
     pub fn clear_monotonic_clock(&mut self) -> &mut Self {
-        self.monotonic_clock = Box::new(EmptyMonotonicClock {});
+        self.monotonic_clock = Box::new(internal::EmptyMonotonicClock {});
         self
     }
 }

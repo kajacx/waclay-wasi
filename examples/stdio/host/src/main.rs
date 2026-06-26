@@ -137,6 +137,7 @@ pub fn main() {
     assert_eq!(result, "[Rust guest reading stdin]: ");
 }
 
+#[derive(Debug)]
 struct CapturingOutputStream(Vec<u8>);
 
 impl WasiP2OutputStream for CapturingOutputStream {
@@ -161,6 +162,7 @@ impl WasiP2OutputStream for CapturingOutputStream {
     }
 }
 
+#[derive(Debug)]
 struct PreparedInputStream {
     data: Vec<u8>,
     offset: usize,

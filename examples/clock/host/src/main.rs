@@ -103,6 +103,7 @@ pub fn main() {
     assert_eq!(time_elapsed, 5_000_000_000)
 }
 
+#[derive(Debug)]
 struct CustomWallClock {
     time: SystemTime,
 }
@@ -125,6 +126,7 @@ impl WasiP2WallClock for CustomWallClock {
     }
 }
 
+#[derive(Debug)]
 struct CustomMonotonicClock {
     time_passed: u64,
 }

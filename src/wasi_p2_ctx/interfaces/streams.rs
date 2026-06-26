@@ -5,7 +5,15 @@ use std::{
 
 use crate::*;
 
-pub trait WasiP2OutputStream {
+pub trait WasiP2InputStream: std::fmt::Debug {
+    fn input_stream_blocking_read(&mut self, len: u64) -> Result<Vec<u8>, bindings::StreamError>;
+
+    fn as_any(&self) -> &dyn Any;
+
+    fn as_any_mut(&mut self) -> &mut dyn Any;
+}
+
+pub trait WasiP2OutputStream: std::fmt::Debug {
     /// Return how many bytes can be written into this stream
     fn output_stream_check_write(&mut self) -> Result<u64, bindings::StreamError>;
 
@@ -16,14 +24,6 @@ pub trait WasiP2OutputStream {
     fn output_stream_blocking_flush(&mut self) -> Result<(), bindings::StreamError> {
         Ok(())
     }
-
-    fn as_any(&self) -> &dyn Any;
-
-    fn as_any_mut(&mut self) -> &mut dyn Any;
-}
-
-pub trait WasiP2InputStream {
-    fn input_stream_blocking_read(&mut self, len: u64) -> Result<Vec<u8>, bindings::StreamError>;
 
     fn as_any(&self) -> &dyn Any;
 
@@ -94,6 +94,7 @@ impl<T: AsWasiP2Ctx> crate::bindings::StreamsHost for T {
 pub(super) mod internal {
     use super::*;
 
+    #[derive(Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
     pub struct OutputStreamEmpty {}
 
     impl WasiP2OutputStream for OutputStreamEmpty {
@@ -114,6 +115,7 @@ pub(super) mod internal {
         }
     }
 
+    #[derive(Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
     pub struct OutputStreamStdout {}
 
     impl WasiP2OutputStream for OutputStreamStdout {
@@ -137,6 +139,7 @@ pub(super) mod internal {
         }
     }
 
+    #[derive(Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
     pub struct OutputStreamStderr {}
 
     impl WasiP2OutputStream for OutputStreamStderr {
@@ -160,6 +163,7 @@ pub(super) mod internal {
         }
     }
 
+    #[derive(Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
     pub struct InputStreamEmpty {}
 
     impl WasiP2InputStream for InputStreamEmpty {
@@ -179,6 +183,7 @@ pub(super) mod internal {
         }
     }
 
+    #[derive(Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
     pub struct InputStreamInherit {}
 
     impl WasiP2InputStream for InputStreamInherit {

@@ -2,7 +2,7 @@ use std::any::Any;
 
 use crate::*;
 
-pub trait WasiP2WallClock {
+pub trait WasiP2WallClock: std::fmt::Debug {
     fn now(&mut self) -> bindings::Datetime;
 
     fn as_any(&self) -> &dyn Any;
@@ -20,6 +20,7 @@ pub(super) mod internal {
     use super::*;
     use std::time::SystemTime;
 
+    #[derive(Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
     pub struct EmptyWallClock {}
 
     impl WasiP2WallClock for EmptyWallClock {
@@ -39,6 +40,7 @@ pub(super) mod internal {
         }
     }
 
+    #[derive(Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
     pub struct HostWallClock {}
 
     impl WasiP2WallClock for HostWallClock {
