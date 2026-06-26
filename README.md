@@ -14,7 +14,7 @@ Std IO | ✔️ | ✔️ | ✔️
 Env variables | ✔️ | ✔️ | ✔️
 Cli arguments | ✔️ | ✔️ | ✔️
 Random generation | ✔️ | ✔️ | ✔️
-Clocks | ✔️ | ❌ | ❌
+Clocks | ✔️ | ✔️ | ✔️
 Filesystem | ❌ | ❌ | ❌
 Networking | ❌ | ❌ | ❌
 
