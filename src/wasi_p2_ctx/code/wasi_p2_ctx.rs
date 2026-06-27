@@ -61,6 +61,12 @@ impl WasiP2Ctx {
         }
     }
 
+    pub fn from_builder(builder: impl FnOnce(&mut Self)) -> Self {
+        let mut ctx = Self::new();
+        builder(&mut ctx);
+        ctx
+    }
+
     pub fn clear_all(&mut self) -> &mut Self {
         self.clear_program_name()
             .clear_cli_arguments()
