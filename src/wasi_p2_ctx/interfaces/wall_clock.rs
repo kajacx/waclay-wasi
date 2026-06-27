@@ -1,13 +1,7 @@
-use std::any::Any;
-
 use crate::*;
 
-pub trait WasiP2WallClock: std::fmt::Debug {
+pub trait WasiP2WallClock: AsAny + std::fmt::Debug {
     fn now(&mut self) -> bindings::Datetime;
-
-    fn as_any(&self) -> &dyn Any;
-
-    fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 
 impl<T: AsWasiP2Ctx> crate::bindings::WallClockHost for T {
@@ -29,14 +23,6 @@ pub(super) mod internal {
                 seconds: 0,
                 nanoseconds: 0,
             }
-        }
-
-        fn as_any(&self) -> &dyn Any {
-            self
-        }
-
-        fn as_any_mut(&mut self) -> &mut dyn Any {
-            self
         }
     }
 
@@ -64,14 +50,6 @@ pub(super) mod internal {
                     }
                 }
             }
-        }
-
-        fn as_any(&self) -> &dyn Any {
-            self
-        }
-
-        fn as_any_mut(&mut self) -> &mut dyn Any {
-            self
         }
     }
 }

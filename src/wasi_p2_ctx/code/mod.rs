@@ -1,6 +1,8 @@
+mod as_any;
 mod debug_rng;
 mod wasi_p2_ctx;
 
+pub use as_any::*;
 pub use wasi_p2_ctx::*;
 
 pub(super) mod internal {

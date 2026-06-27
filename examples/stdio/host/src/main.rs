@@ -164,14 +164,6 @@ impl WasiP2OutputStream for CapturingOutputStream {
         self.0.append(&mut contents);
         Ok(())
     }
-
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
 
 #[derive(Debug)]
@@ -192,13 +184,5 @@ impl WasiP2InputStream for PreparedInputStream {
 
         self.offset = end;
         Ok(result)
-    }
-
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
     }
 }

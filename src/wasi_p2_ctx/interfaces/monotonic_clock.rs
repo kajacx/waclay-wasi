@@ -1,13 +1,7 @@
-use std::any::Any;
-
 use crate::*;
 
-pub trait WasiP2MonotonicClock: std::fmt::Debug {
+pub trait WasiP2MonotonicClock: AsAny + std::fmt::Debug {
     fn now(&mut self) -> bindings::Instant;
-
-    fn as_any(&self) -> &dyn Any;
-
-    fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 
 impl<T: AsWasiP2Ctx> crate::bindings::MonotonicClockHost for T {
@@ -26,14 +20,6 @@ pub(super) mod internal {
         fn now(&mut self) -> bindings::Instant {
             0
         }
-
-        fn as_any(&self) -> &dyn Any {
-            self
-        }
-
-        fn as_any_mut(&mut self) -> &mut dyn Any {
-            self
-        }
     }
 
     #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
@@ -50,14 +36,6 @@ pub(super) mod internal {
     impl WasiP2MonotonicClock for HostMonotonicClock {
         fn now(&mut self) -> bindings::Instant {
             self.start.elapsed().as_nanos() as u64
-        }
-
-        fn as_any(&self) -> &dyn Any {
-            self
-        }
-
-        fn as_any_mut(&mut self) -> &mut dyn Any {
-            self
         }
     }
 }

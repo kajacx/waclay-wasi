@@ -116,14 +116,6 @@ impl WasiP2WallClock for CustomWallClock {
             nanoseconds: elapsed.subsec_nanos(),
         }
     }
-
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }
 
 #[derive(Debug)]
@@ -136,13 +128,5 @@ impl WasiP2MonotonicClock for CustomMonotonicClock {
         let result = self.time_passed;
         self.time_passed += 5_000_000_000; // Simulate 5 seconds passing between every call
         result
-    }
-
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
     }
 }

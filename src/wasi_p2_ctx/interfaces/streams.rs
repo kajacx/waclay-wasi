@@ -1,19 +1,12 @@
-use std::{
-    any::Any,
-    io::{Read, Write},
-};
+use std::io::{Read, Write};
 
 use crate::*;
 
-pub trait WasiP2InputStream: std::fmt::Debug {
+pub trait WasiP2InputStream: AsAny + std::fmt::Debug {
     fn input_stream_blocking_read(&mut self, len: u64) -> Result<Vec<u8>, bindings::StreamError>;
-
-    fn as_any(&self) -> &dyn Any;
-
-    fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 
-pub trait WasiP2OutputStream: std::fmt::Debug {
+pub trait WasiP2OutputStream: AsAny + std::fmt::Debug {
     /// Return how many bytes can be written into this stream
     fn output_stream_check_write(&mut self) -> Result<u64, bindings::StreamError>;
 
@@ -24,10 +17,6 @@ pub trait WasiP2OutputStream: std::fmt::Debug {
     fn output_stream_blocking_flush(&mut self) -> Result<(), bindings::StreamError> {
         Ok(())
     }
-
-    fn as_any(&self) -> &dyn Any;
-
-    fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 
 impl<T: AsWasiP2Ctx> crate::bindings::StreamsHost for T {
@@ -104,14 +93,6 @@ pub(super) mod internal {
         fn output_stream_write(&mut self, _contents: Vec<u8>) -> Result<(), bindings::StreamError> {
             Ok(())
         }
-
-        fn as_any(&self) -> &dyn Any {
-            self
-        }
-
-        fn as_any_mut(&mut self) -> &mut dyn Any {
-            self
-        }
     }
 
     #[derive(Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
@@ -127,14 +108,6 @@ pub(super) mod internal {
                 eprintln!("Unexpected error when writing to stdout: {err:?}");
                 bindings::StreamError::Closed
             })
-        }
-
-        fn as_any(&self) -> &dyn Any {
-            self
-        }
-
-        fn as_any_mut(&mut self) -> &mut dyn Any {
-            self
         }
     }
 
@@ -152,14 +125,6 @@ pub(super) mod internal {
                 bindings::StreamError::Closed
             })
         }
-
-        fn as_any(&self) -> &dyn Any {
-            self
-        }
-
-        fn as_any_mut(&mut self) -> &mut dyn Any {
-            self
-        }
     }
 
     #[derive(Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
@@ -171,14 +136,6 @@ pub(super) mod internal {
             _len: u64,
         ) -> Result<Vec<u8>, bindings::StreamError> {
             Ok(vec![])
-        }
-
-        fn as_any(&self) -> &dyn Any {
-            self
-        }
-
-        fn as_any_mut(&mut self) -> &mut dyn Any {
-            self
         }
     }
 
@@ -202,14 +159,6 @@ pub(super) mod internal {
                     Err(bindings::StreamError::Closed)
                 }
             }
-        }
-
-        fn as_any(&self) -> &dyn Any {
-            self
-        }
-
-        fn as_any_mut(&mut self) -> &mut dyn Any {
-            self
         }
     }
 }
