@@ -136,15 +136,15 @@ pub fn main() {
     let result = read_stdin.call(&mut store, ()).unwrap();
     assert_eq!(result, "[Rust guest reading stdin]: ");
 
-    // Test exit here, because I don't want to add another example just for it
+    // Test exit here, because I don't want to add another example folder for it
     store.data_mut().as_wasi_mut().clear_all().inherit_stdout();
 
     let exit = bindings::exports_funcs::get_exit(&instance, &mut store).unwrap();
-    exit.call(&mut store, ()).unwrap_err(); // should return an error
+    exit.call(&mut store, ()).unwrap_err(); // Should return an error
 
     // WARNING! Calling `exit` doesn't actually crash the instance, it just returns early!
     // It is up to the user to never use an instance again if it returned an error unexpectedly.
-    // The following call will happen to work and even print the message ,
+    // The following call will happen to work and even print the message,
     // but accessing an instance that called `exit` is a very bad idea!
     // print_stdout.call(&mut store, "Hello?".to_string()).unwrap(); // <- will still work
 }

@@ -22,7 +22,7 @@ Networking | ❌ | ❌ | ❌
 *) Terminal is NOT std in/out/err. It is a separate interface for detecting if a process is connected to a real terminal screen
 for the purpose for setting colors, formatting output based on screen width, etc.
 
-For now, `waclay-wasi` will just tell the component that it is not connected to a terminal.
+For now, `waclay-wasi` will just tell the component that it is not connected to any terminal.
 
 ### Legend
 
@@ -33,6 +33,10 @@ For now, `waclay-wasi` will just tell the component that it is not connected to 
 ## Goals
 
 Current target is to have Filesystem and Networking in the "Empty impl" state, and everything else fully implemented.
+
+### Tasks
+
+- Make the WasiP2 interfaces fallible (returning `anyhow::Result`) so users can return a trap to the host.
 
 ## Usage
 

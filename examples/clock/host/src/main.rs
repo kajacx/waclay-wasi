@@ -63,7 +63,7 @@ pub fn main() {
         .inherit_wall_clock()
         .inherit_monotonic_clock();
     // Warning! You DO NOT want to change monotonic clock impl while an component is active.
-    // It is OK here only because we know that the component does not any `Instant` values.
+    // It is OK here only because we know that the component does not hold any `Instant` values.
 
     let current_time = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
@@ -78,7 +78,7 @@ pub fn main() {
 
     let tile_elapsed = get_time_elapsed.call(&mut store, ()).unwrap();
     assert!(
-        tile_elapsed < 60_000_000_000,
+        tile_elapsed < 60_000_000_000, // One minute
         "Component call should have taken less than a minute, it took {tile_elapsed} nano seconds instead."
     );
 
@@ -93,11 +93,11 @@ pub fn main() {
         .set_wall_clock(Box::new(CustomWallClock { time: custom_time }))
         .set_monotonic_clock(Box::new(CustomMonotonicClock { time_passed: 0 }));
     // Warning! You DO NOT want to change monotonic clock impl while an component is active.
-    // It is OK here only because we know that the component does not any `Instant` values.
+    // It is OK here only because we know that the component does not hold any `Instant` values.
 
     let component_time_seconds = get_wall_clock.call(&mut store, ()).unwrap();
     let component_time = SystemTime::UNIX_EPOCH + Duration::from_secs(component_time_seconds);
-    assert_eq!(component_time, component_time);
+    assert_eq!(component_time, custom_time);
 
     let time_elapsed = get_time_elapsed.call(&mut store, ()).unwrap();
     assert_eq!(time_elapsed, 5_000_000_000)

@@ -89,7 +89,7 @@ pub fn main() {
     assert_ne!(inherit_bytes3, inherit_bytes1);
     assert_ne!(inherit_bytes3, inherit_bytes2);
 
-    // Set custom environment vars and arguments.
+    // Set custom rng seed.
 
     store.data_mut().as_wasi_mut().clear_all().set_rng(67);
 

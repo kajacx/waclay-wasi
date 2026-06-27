@@ -41,8 +41,7 @@ pub fn main() {
     // and will not re-fetch them on subsequent queries.
     // So we have to re-do the instance and re-fetch the exports for every use case.
 
-    // Ignoring std io and pretending it's closed is already the default behaviour,
-    // but you can call "clear" methods to make sure in case wasi ctx was modified before.
+    // By default, there are no env variables, cli arguments, and program name is an empty string
 
     let instance = linker.instantiate(&mut store, &component).unwrap();
 
