@@ -318,13 +318,13 @@ impl WasiP2Ctx {
 }
 
 pub trait AsWasiP2Ctx {
-    fn as_wasi_ref(&self) -> &WasiP2Ctx;
+    fn as_wasi(&self) -> &WasiP2Ctx;
 
     fn as_wasi_mut(&mut self) -> &mut WasiP2Ctx;
 }
 
 impl AsWasiP2Ctx for WasiP2Ctx {
-    fn as_wasi_ref(&self) -> &WasiP2Ctx {
+    fn as_wasi(&self) -> &WasiP2Ctx {
         self
     }
 

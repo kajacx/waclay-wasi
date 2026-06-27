@@ -12,7 +12,7 @@ struct StoreData {
 }
 
 impl AsWasiP2Ctx for StoreData {
-    fn as_wasi_ref(&self) -> &WasiP2Ctx {
+    fn as_wasi(&self) -> &WasiP2Ctx {
         &self.ctx
     }
 
