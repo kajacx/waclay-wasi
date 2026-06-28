@@ -1399,9 +1399,20 @@ pub trait TypesHost {
         &mut self,
         self_: crate::WasiP2DescriptorResource,
     ) -> anyhow::Result<Result<DescriptorFlags, ErrorCode>>;
+    fn descriptor_create_directory_at(
+        &mut self,
+        self_: crate::WasiP2DescriptorResource,
+        path: String,
+    ) -> anyhow::Result<Result<(), ErrorCode>>;
     fn descriptor_stat(
         &mut self,
         self_: crate::WasiP2DescriptorResource,
+    ) -> anyhow::Result<Result<DescriptorStat, ErrorCode>>;
+    fn descriptor_stat_at(
+        &mut self,
+        self_: crate::WasiP2DescriptorResource,
+        path_flags: PathFlags,
+        path: String,
     ) -> anyhow::Result<Result<DescriptorStat, ErrorCode>>;
     fn descriptor_open_at(
         &mut self,
@@ -1414,6 +1425,12 @@ pub trait TypesHost {
     fn descriptor_metadata_hash(
         &mut self,
         self_: crate::WasiP2DescriptorResource,
+    ) -> anyhow::Result<Result<MetadataHashValue, ErrorCode>>;
+    fn descriptor_metadata_hash_at(
+        &mut self,
+        self_: crate::WasiP2DescriptorResource,
+        path_flags: PathFlags,
+        path: String,
     ) -> anyhow::Result<Result<MetadataHashValue, ErrorCode>>;
 }
 
@@ -2149,6 +2166,36 @@ pub mod imports {
 
         host_interface
             .define_func(
+                "[method]descriptor.create-directory-at",
+                Func::new(
+                    &mut *store,
+                    FuncType::new(
+                        [
+                            ValueType::Borrow(crate::WasiP2DescriptorResource::resource_type()),
+                            ValueType::String,
+                        ],
+                        [ValueType::Result(ResultType::new(
+                            None,
+                            Some(ErrorCode::ty()),
+                        ))],
+                    ),
+                    |mut ctx, params, results| {
+                        let self_ = crate::WasiP2DescriptorResource::from_value(&params[0], ctx.as_context())?;
+                        let path = if let Value::String(s) = &params[1] {
+                            s.to_string()
+                        } else {
+                            bail!("Expected string")
+                        };
+                        let result = ctx.data_mut().descriptor_create_directory_at(self_, path)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define [method]descriptor.create-directory-at function")?;
+
+        host_interface
+            .define_func(
                 "[method]descriptor.stat",
                 Func::new(
                     &mut *store,
@@ -2168,6 +2215,38 @@ pub mod imports {
                 ),
             )
             .context("Failed to define [method]descriptor.stat function")?;
+
+        host_interface
+            .define_func(
+                "[method]descriptor.stat-at",
+                Func::new(
+                    &mut *store,
+                    FuncType::new(
+                        [
+                            ValueType::Borrow(crate::WasiP2DescriptorResource::resource_type()),
+                            PathFlags::ty(),
+                            ValueType::String,
+                        ],
+                        [ValueType::Result(ResultType::new(
+                            Some(DescriptorStat::ty()),
+                            Some(ErrorCode::ty()),
+                        ))],
+                    ),
+                    |mut ctx, params, results| {
+                        let self_ = crate::WasiP2DescriptorResource::from_value(&params[0], ctx.as_context())?;
+                        let path_flags = PathFlags::from_value(&params[1], ctx.as_context())?;
+                        let path = if let Value::String(s) = &params[2] {
+                            s.to_string()
+                        } else {
+                            bail!("Expected string")
+                        };
+                        let result = ctx.data_mut().descriptor_stat_at(self_, path_flags, path)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define [method]descriptor.stat-at function")?;
 
         host_interface
             .define_func(
@@ -2228,6 +2307,40 @@ pub mod imports {
                 ),
             )
             .context("Failed to define [method]descriptor.metadata-hash function")?;
+
+        host_interface
+            .define_func(
+                "[method]descriptor.metadata-hash-at",
+                Func::new(
+                    &mut *store,
+                    FuncType::new(
+                        [
+                            ValueType::Borrow(crate::WasiP2DescriptorResource::resource_type()),
+                            PathFlags::ty(),
+                            ValueType::String,
+                        ],
+                        [ValueType::Result(ResultType::new(
+                            Some(MetadataHashValue::ty()),
+                            Some(ErrorCode::ty()),
+                        ))],
+                    ),
+                    |mut ctx, params, results| {
+                        let self_ = crate::WasiP2DescriptorResource::from_value(&params[0], ctx.as_context())?;
+                        let path_flags = PathFlags::from_value(&params[1], ctx.as_context())?;
+                        let path = if let Value::String(s) = &params[2] {
+                            s.to_string()
+                        } else {
+                            bail!("Expected string")
+                        };
+                        let result = ctx
+                            .data_mut()
+                            .descriptor_metadata_hash_at(self_, path_flags, path)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define [method]descriptor.metadata-hash-at function")?;
 
         Ok(())
     }

@@ -145,9 +145,12 @@ package wasi:filesystem@0.2.6 {
       write-via-stream: func(offset: filesize) -> result<output-stream, error-code>;
       append-via-stream: func() -> result<output-stream, error-code>;
       get-flags: func() -> result<descriptor-flags, error-code>;
+      create-directory-at: func(path: string) -> result<_, error-code>;
       stat: func() -> result<descriptor-stat, error-code>;
+      stat-at: func(path-flags: path-flags, path: string) -> result<descriptor-stat, error-code>;
       open-at: func(path-flags: path-flags, path: string, open-flags: open-flags, %flags: descriptor-flags) -> result<descriptor, error-code>;
       metadata-hash: func() -> result<metadata-hash-value, error-code>;
+      metadata-hash-at: func(path-flags: path-flags, path: string) -> result<metadata-hash-value, error-code>;
     }
 
     type filesize = u64;

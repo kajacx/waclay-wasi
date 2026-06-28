@@ -1,4 +1,4 @@
-use std::fs::File;
+use std::fs::{File, create_dir_all};
 
 mod bindings {
     wit_bindgen::generate!({
@@ -19,5 +19,7 @@ impl bindings::exports::waclay_wasi::examples::funcs::Guest for GuestComponent {
         File::open("./file.txt").unwrap_err();
 
         File::create("./file.txt").unwrap_err();
+
+        create_dir_all("./directory").unwrap_err();
     }
 }
