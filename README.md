@@ -16,7 +16,7 @@ Cli arguments | ✔️ | ✔️ | ✔️
 Random generation | ✔️ | ✔️ | ✔️
 Clocks | ✔️ | ✔️ | ✔️
 Terminal* | ✔️ | ❌ | ❌
-Filesystem | ❌ | ❌ | ❌
+Filesystem | ✔️ | ❌ | ❌
 Networking | ❌ | ❌ | ❌
 
 *) Terminal is NOT std in/out/err. It is a separate interface for detecting if a process is connected to a real terminal screen

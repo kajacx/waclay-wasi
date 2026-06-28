@@ -8,6 +8,20 @@ impl<T: AsWasiP2Ctx> crate::bindings::MonotonicClockHost for T {
     fn now(&mut self) -> anyhow::Result<bindings::Instant> {
         Ok(self.as_wasi_mut().monotonic_clock.now())
     }
+
+    fn subscribe_instant(
+        &mut self,
+        _when: bindings::Instant,
+    ) -> anyhow::Result<WasiP2PollableResource> {
+        Ok(WasiP2PollableResource {})
+    }
+
+    fn subscribe_duration(
+        &mut self,
+        _when: bindings::Duration,
+    ) -> anyhow::Result<WasiP2PollableResource> {
+        Ok(WasiP2PollableResource {})
+    }
 }
 
 pub(super) mod internal {

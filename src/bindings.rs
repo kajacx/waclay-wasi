@@ -485,6 +485,8 @@ impl TerminalOutputResource {
 
 pub type Instant = u64;
 
+pub type Duration = u64;
+
 #[derive(Debug, Clone)]
 pub struct Datetime {
     pub seconds: u64,
@@ -1367,11 +1369,14 @@ pub trait TerminalStderrHost {
 /// Host trait for interface: wasi:random/random@0.2.6
 pub trait RandomHost {
     fn get_random_u64(&mut self) -> anyhow::Result<u64>;
+    fn get_random_bytes(&mut self, len: u64) -> anyhow::Result<Vec<u8>>;
 }
 
 /// Host trait for interface: wasi:clocks/monotonic-clock@0.2.6
 pub trait MonotonicClockHost {
     fn now(&mut self) -> anyhow::Result<Instant>;
+    fn subscribe_instant(&mut self, when: Instant) -> anyhow::Result<crate::WasiP2PollableResource>;
+    fn subscribe_duration(&mut self, when: Duration) -> anyhow::Result<crate::WasiP2PollableResource>;
 }
 
 /// Host trait for interface: wasi:clocks/wall-clock@0.2.6
@@ -1990,6 +1995,29 @@ pub mod imports {
             )
             .context("Failed to define get-random-u64 function")?;
 
+        host_interface
+            .define_func(
+                "get-random-bytes",
+                Func::new(
+                    &mut *store,
+                    FuncType::new(
+                        [ValueType::U64],
+                        [ValueType::List(ListType::new(ValueType::U8))],
+                    ),
+                    |mut ctx, params, results| {
+                        let len = if let Value::U64(x) = &params[0] {
+                            *x
+                        } else {
+                            bail!("Expected u64")
+                        };
+                        let result = ctx.data_mut().get_random_bytes(len)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define get-random-bytes function")?;
+
         Ok(())
     }
 
@@ -2018,6 +2046,41 @@ pub mod imports {
                 ),
             )
             .context("Failed to define now function")?;
+
+        host_interface
+            .define_func(
+                "subscribe-instant",
+                Func::new(
+                    &mut *store,
+                    FuncType::new([Instant::ty()], [ValueType::Own(crate::WasiP2PollableResource::resource_type())]),
+                    |mut ctx, params, results| {
+                        let when = Instant::from_value(&params[0], ctx.as_context())?;
+                        let result = ctx.data_mut().subscribe_instant(when)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define subscribe-instant function")?;
+
+        host_interface
+            .define_func(
+                "subscribe-duration",
+                Func::new(
+                    &mut *store,
+                    FuncType::new(
+                        [Duration::ty()],
+                        [ValueType::Own(crate::WasiP2PollableResource::resource_type())],
+                    ),
+                    |mut ctx, params, results| {
+                        let when = Duration::from_value(&params[0], ctx.as_context())?;
+                        let result = ctx.data_mut().subscribe_duration(when)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define subscribe-duration function")?;
 
         Ok(())
     }
