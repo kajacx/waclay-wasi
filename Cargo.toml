@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-# waclay = { version = "0.2" }
 waclay = { path = "../waclay/crates/waclay" }
 simple_rng = { version = "0.4", default-features = false }
 getrandom = { version = "0.4" }

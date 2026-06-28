@@ -1,0 +1,9 @@
+package waclay-wasi:examples@0.1.0;
+
+interface funcs {
+    test-filesystem: func();
+}
+
+world filesystem {
+    export funcs;
+}

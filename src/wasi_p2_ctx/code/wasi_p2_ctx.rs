@@ -61,7 +61,7 @@ impl WasiP2Ctx {
         }
     }
 
-    pub fn from_builder(builder: impl FnOnce(&mut Self)) -> Self {
+    pub fn from_builder(builder: impl FnOnce(&mut Self) -> &mut Self) -> Self {
         let mut ctx = Self::new();
         builder(&mut ctx);
         ctx
