@@ -7,6 +7,9 @@ use anyhow::*;
 use waclay::*;
 use wasm_runtime_layer::backend;
 
+// Note: If using flags types, add to your Cargo.toml:
+// bitflags = "2.0"
+
 // ========== Type Definitions ==========
 
 /// Resource type: crate::WasiP2PollableResource
@@ -546,6 +549,740 @@ impl ComponentType for Datetime {
 
 impl UnaryComponentType for Datetime {}
 
+/// Resource type: crate::WasiP2DescriptorResource
+///
+/// This is a host-managed resource. You should define this type
+/// with your actual resource data, then use the manual registration
+/// pattern shown below instead of the generated trait.
+///
+/// Example:
+/// ```rust,ignore
+/// #[derive(Debug)]
+/// pub struct crate::WasiP2DescriptorResource {
+///     // Your resource data here
+///     value: i32,
+/// }
+///
+/// // Manual registration (replaces generated trait):
+/// let resource_ty = ResourceType::new::<crate::WasiP2DescriptorResource>(None);
+///
+/// // Constructor:
+/// interface.define_func("[constructor]descriptor",
+///     Func::new(&mut store,
+///         FuncType::new([/* params */], [ValueType::Own(resource_ty.clone())]),
+///         move |ctx, args, results| {
+///             // Extract params and create resource
+///             results[0] = Value::Own(ResourceOwn::new(
+///                 ctx,
+///                 crate::WasiP2DescriptorResource(/* data */),
+///                 resource_ty.clone(),
+///             )?);
+///             Ok(())
+///         }
+///     )
+/// )?;
+///
+/// // Methods:
+/// interface.define_func("[method]descriptor.method-name",
+///     Func::new(&mut store,
+///         FuncType::new([ValueType::Borrow(resource_ty.clone())], []),
+///         |ctx, args, _| {
+///             let Value::Borrow(res) = &args[0] else {
+///                 bail!("Expected Borrow")
+///             };
+///             let data = res.rep::<crate::WasiP2DescriptorResource, _, _>(&ctx.as_context())?;
+///             // Use data
+///             Ok(())
+///         }
+///     )
+/// )?;
+/// ```
+///
+/// See the waclay examples/resource.rs for a complete working example.
+#[derive(Debug)]
+pub struct DescriptorResource {
+    // TODO: Add your resource fields
+    _placeholder: (),
+}
+
+impl DescriptorResource {
+    /// Get the ResourceType for this resource.
+    ///
+    /// This helper method creates a ResourceType for use in manual
+    /// resource registration. See the documentation above for usage.
+    pub fn resource_type() -> ResourceType {
+        ResourceType::new::<Self>(None)
+    }
+}
+
+pub type Filesize = u64;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ErrorCode {
+    Access,
+    WouldBlock,
+    Already,
+    BadDescriptor,
+    Busy,
+    Deadlock,
+    Quota,
+    Exist,
+    FileTooLarge,
+    IllegalByteSequence,
+    InProgress,
+    Interrupted,
+    Invalid,
+    Io,
+    IsDirectory,
+    Loop,
+    TooManyLinks,
+    MessageSize,
+    NameTooLong,
+    NoDevice,
+    NoEntry,
+    NoLock,
+    InsufficientMemory,
+    InsufficientSpace,
+    NotDirectory,
+    NotEmpty,
+    NotRecoverable,
+    Unsupported,
+    NoTty,
+    NoSuchDevice,
+    Overflow,
+    NotPermitted,
+    Pipe,
+    ReadOnly,
+    InvalidSeek,
+    TextFileBusy,
+    CrossDevice,
+}
+
+impl ComponentType for ErrorCode {
+    fn ty() -> ValueType {
+        ValueType::Enum(
+            EnumType::new(
+                None,
+                [
+                    "access",
+                    "would-block",
+                    "already",
+                    "bad-descriptor",
+                    "busy",
+                    "deadlock",
+                    "quota",
+                    "exist",
+                    "file-too-large",
+                    "illegal-byte-sequence",
+                    "in-progress",
+                    "interrupted",
+                    "invalid",
+                    "io",
+                    "is-directory",
+                    "loop",
+                    "too-many-links",
+                    "message-size",
+                    "name-too-long",
+                    "no-device",
+                    "no-entry",
+                    "no-lock",
+                    "insufficient-memory",
+                    "insufficient-space",
+                    "not-directory",
+                    "not-empty",
+                    "not-recoverable",
+                    "unsupported",
+                    "no-tty",
+                    "no-such-device",
+                    "overflow",
+                    "not-permitted",
+                    "pipe",
+                    "read-only",
+                    "invalid-seek",
+                    "text-file-busy",
+                    "cross-device",
+                ],
+            )
+            .unwrap(),
+        )
+    }
+
+    fn from_value(value: &Value, #[allow(unused)] ctx: impl AsContext) -> Result<Self> {
+        if let Value::Enum(enum_val) = value {
+            let discriminant = enum_val.discriminant();
+            match discriminant {
+                0 => Ok(ErrorCode::Access),
+                1 => Ok(ErrorCode::WouldBlock),
+                2 => Ok(ErrorCode::Already),
+                3 => Ok(ErrorCode::BadDescriptor),
+                4 => Ok(ErrorCode::Busy),
+                5 => Ok(ErrorCode::Deadlock),
+                6 => Ok(ErrorCode::Quota),
+                7 => Ok(ErrorCode::Exist),
+                8 => Ok(ErrorCode::FileTooLarge),
+                9 => Ok(ErrorCode::IllegalByteSequence),
+                10 => Ok(ErrorCode::InProgress),
+                11 => Ok(ErrorCode::Interrupted),
+                12 => Ok(ErrorCode::Invalid),
+                13 => Ok(ErrorCode::Io),
+                14 => Ok(ErrorCode::IsDirectory),
+                15 => Ok(ErrorCode::Loop),
+                16 => Ok(ErrorCode::TooManyLinks),
+                17 => Ok(ErrorCode::MessageSize),
+                18 => Ok(ErrorCode::NameTooLong),
+                19 => Ok(ErrorCode::NoDevice),
+                20 => Ok(ErrorCode::NoEntry),
+                21 => Ok(ErrorCode::NoLock),
+                22 => Ok(ErrorCode::InsufficientMemory),
+                23 => Ok(ErrorCode::InsufficientSpace),
+                24 => Ok(ErrorCode::NotDirectory),
+                25 => Ok(ErrorCode::NotEmpty),
+                26 => Ok(ErrorCode::NotRecoverable),
+                27 => Ok(ErrorCode::Unsupported),
+                28 => Ok(ErrorCode::NoTty),
+                29 => Ok(ErrorCode::NoSuchDevice),
+                30 => Ok(ErrorCode::Overflow),
+                31 => Ok(ErrorCode::NotPermitted),
+                32 => Ok(ErrorCode::Pipe),
+                33 => Ok(ErrorCode::ReadOnly),
+                34 => Ok(ErrorCode::InvalidSeek),
+                35 => Ok(ErrorCode::TextFileBusy),
+                36 => Ok(ErrorCode::CrossDevice),
+                _ => bail!("Invalid enum discriminant: {}", discriminant),
+            }
+        } else {
+            bail!("Expected Enum value")
+        }
+    }
+
+    fn into_value(self, #[allow(unused)] mut ctx: impl AsContextMut) -> Result<Value> {
+        let enum_type = EnumType::new(
+            None,
+            [
+                "access",
+                "would-block",
+                "already",
+                "bad-descriptor",
+                "busy",
+                "deadlock",
+                "quota",
+                "exist",
+                "file-too-large",
+                "illegal-byte-sequence",
+                "in-progress",
+                "interrupted",
+                "invalid",
+                "io",
+                "is-directory",
+                "loop",
+                "too-many-links",
+                "message-size",
+                "name-too-long",
+                "no-device",
+                "no-entry",
+                "no-lock",
+                "insufficient-memory",
+                "insufficient-space",
+                "not-directory",
+                "not-empty",
+                "not-recoverable",
+                "unsupported",
+                "no-tty",
+                "no-such-device",
+                "overflow",
+                "not-permitted",
+                "pipe",
+                "read-only",
+                "invalid-seek",
+                "text-file-busy",
+                "cross-device",
+            ],
+        )
+        .unwrap();
+
+        let discriminant = match self {
+            ErrorCode::Access => 0,
+            ErrorCode::WouldBlock => 1,
+            ErrorCode::Already => 2,
+            ErrorCode::BadDescriptor => 3,
+            ErrorCode::Busy => 4,
+            ErrorCode::Deadlock => 5,
+            ErrorCode::Quota => 6,
+            ErrorCode::Exist => 7,
+            ErrorCode::FileTooLarge => 8,
+            ErrorCode::IllegalByteSequence => 9,
+            ErrorCode::InProgress => 10,
+            ErrorCode::Interrupted => 11,
+            ErrorCode::Invalid => 12,
+            ErrorCode::Io => 13,
+            ErrorCode::IsDirectory => 14,
+            ErrorCode::Loop => 15,
+            ErrorCode::TooManyLinks => 16,
+            ErrorCode::MessageSize => 17,
+            ErrorCode::NameTooLong => 18,
+            ErrorCode::NoDevice => 19,
+            ErrorCode::NoEntry => 20,
+            ErrorCode::NoLock => 21,
+            ErrorCode::InsufficientMemory => 22,
+            ErrorCode::InsufficientSpace => 23,
+            ErrorCode::NotDirectory => 24,
+            ErrorCode::NotEmpty => 25,
+            ErrorCode::NotRecoverable => 26,
+            ErrorCode::Unsupported => 27,
+            ErrorCode::NoTty => 28,
+            ErrorCode::NoSuchDevice => 29,
+            ErrorCode::Overflow => 30,
+            ErrorCode::NotPermitted => 31,
+            ErrorCode::Pipe => 32,
+            ErrorCode::ReadOnly => 33,
+            ErrorCode::InvalidSeek => 34,
+            ErrorCode::TextFileBusy => 35,
+            ErrorCode::CrossDevice => 36,
+        };
+
+        Ok(Value::Enum(Enum::new(enum_type, discriminant)?))
+    }
+}
+
+impl UnaryComponentType for ErrorCode {}
+
+bitflags::bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct DescriptorFlags: u32 {
+        const READ = 1 << 0;
+        const WRITE = 1 << 1;
+        const FILE_INTEGRITY_SYNC = 1 << 2;
+        const DATA_INTEGRITY_SYNC = 1 << 3;
+        const REQUESTED_WRITE_SYNC = 1 << 4;
+        const MUTATE_DIRECTORY = 1 << 5;
+    }
+}
+
+impl ComponentType for DescriptorFlags {
+    fn ty() -> ValueType {
+        ValueType::Flags(
+            FlagsType::new(
+                None,
+                [
+                    "read",
+                    "write",
+                    "file-integrity-sync",
+                    "data-integrity-sync",
+                    "requested-write-sync",
+                    "mutate-directory",
+                ],
+            )
+            .unwrap(),
+        )
+    }
+
+    fn from_value(value: &Value, #[allow(unused)] ctx: impl AsContext) -> Result<Self> {
+        if let Value::Flags(flags_val) = value {
+            let mut result = DescriptorFlags::empty();
+            let ty = flags_val.ty();
+            let count = ty.names().len();
+            for i in 0..count {
+                if flags_val.get_index(i) {
+                    result |= DescriptorFlags::from_bits_truncate(1 << i);
+                }
+            }
+            Ok(result)
+        } else {
+            bail!("Expected Flags value")
+        }
+    }
+
+    fn into_value(self, #[allow(unused)] mut ctx: impl AsContextMut) -> Result<Value> {
+        let flags_type = FlagsType::new(
+            None,
+            [
+                "read",
+                "write",
+                "file-integrity-sync",
+                "data-integrity-sync",
+                "requested-write-sync",
+                "mutate-directory",
+            ],
+        )
+        .unwrap();
+
+        let mut flags_val = Flags::new(flags_type);
+        for i in 0..6 {
+            if self.bits() & (1 << i) != 0 {
+                flags_val.set_index(i, true);
+            }
+        }
+        Ok(Value::Flags(flags_val))
+    }
+}
+
+impl UnaryComponentType for DescriptorFlags {}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DescriptorType {
+    Unknown,
+    BlockDevice,
+    CharacterDevice,
+    Directory,
+    Fifo,
+    SymbolicLink,
+    RegularFile,
+    Socket,
+}
+
+impl ComponentType for DescriptorType {
+    fn ty() -> ValueType {
+        ValueType::Enum(
+            EnumType::new(
+                None,
+                [
+                    "unknown",
+                    "block-device",
+                    "character-device",
+                    "directory",
+                    "fifo",
+                    "symbolic-link",
+                    "regular-file",
+                    "socket",
+                ],
+            )
+            .unwrap(),
+        )
+    }
+
+    fn from_value(value: &Value, #[allow(unused)] ctx: impl AsContext) -> Result<Self> {
+        if let Value::Enum(enum_val) = value {
+            let discriminant = enum_val.discriminant();
+            match discriminant {
+                0 => Ok(DescriptorType::Unknown),
+                1 => Ok(DescriptorType::BlockDevice),
+                2 => Ok(DescriptorType::CharacterDevice),
+                3 => Ok(DescriptorType::Directory),
+                4 => Ok(DescriptorType::Fifo),
+                5 => Ok(DescriptorType::SymbolicLink),
+                6 => Ok(DescriptorType::RegularFile),
+                7 => Ok(DescriptorType::Socket),
+                _ => bail!("Invalid enum discriminant: {}", discriminant),
+            }
+        } else {
+            bail!("Expected Enum value")
+        }
+    }
+
+    fn into_value(self, #[allow(unused)] mut ctx: impl AsContextMut) -> Result<Value> {
+        let enum_type = EnumType::new(
+            None,
+            [
+                "unknown",
+                "block-device",
+                "character-device",
+                "directory",
+                "fifo",
+                "symbolic-link",
+                "regular-file",
+                "socket",
+            ],
+        )
+        .unwrap();
+
+        let discriminant = match self {
+            DescriptorType::Unknown => 0,
+            DescriptorType::BlockDevice => 1,
+            DescriptorType::CharacterDevice => 2,
+            DescriptorType::Directory => 3,
+            DescriptorType::Fifo => 4,
+            DescriptorType::SymbolicLink => 5,
+            DescriptorType::RegularFile => 6,
+            DescriptorType::Socket => 7,
+        };
+
+        Ok(Value::Enum(Enum::new(enum_type, discriminant)?))
+    }
+}
+
+impl UnaryComponentType for DescriptorType {}
+
+pub type LinkCount = u64;
+
+#[derive(Debug, Clone)]
+pub struct DescriptorStat {
+    pub r#type: DescriptorType,
+    pub link_count: LinkCount,
+    pub size: Filesize,
+    pub data_access_timestamp: Option<Datetime>,
+    pub data_modification_timestamp: Option<Datetime>,
+    pub status_change_timestamp: Option<Datetime>,
+}
+
+impl ComponentType for DescriptorStat {
+    fn ty() -> ValueType {
+        ValueType::Record(
+            RecordType::new(
+                None,
+                [
+                    ("type", DescriptorType::ty()),
+                    ("link-count", LinkCount::ty()),
+                    ("size", Filesize::ty()),
+                    (
+                        "data-access-timestamp",
+                        ValueType::Option(OptionType::new(Datetime::ty())),
+                    ),
+                    (
+                        "data-modification-timestamp",
+                        ValueType::Option(OptionType::new(Datetime::ty())),
+                    ),
+                    (
+                        "status-change-timestamp",
+                        ValueType::Option(OptionType::new(Datetime::ty())),
+                    ),
+                ],
+            )
+            .unwrap(),
+        )
+    }
+
+    fn from_value(value: &Value, #[allow(unused)] ctx: impl AsContext) -> Result<Self> {
+        if let Value::Record(record) = value {
+            let r#type = record
+                .field("type")
+                .ok_or_else(|| anyhow!("Missing 'type' field"))?;
+            let link_count = record
+                .field("link-count")
+                .ok_or_else(|| anyhow!("Missing 'link-count' field"))?;
+            let size = record
+                .field("size")
+                .ok_or_else(|| anyhow!("Missing 'size' field"))?;
+            let data_access_timestamp = record
+                .field("data-access-timestamp")
+                .ok_or_else(|| anyhow!("Missing 'data-access-timestamp' field"))?;
+            let data_modification_timestamp = record
+                .field("data-modification-timestamp")
+                .ok_or_else(|| anyhow!("Missing 'data-modification-timestamp' field"))?;
+            let status_change_timestamp = record
+                .field("status-change-timestamp")
+                .ok_or_else(|| anyhow!("Missing 'status-change-timestamp' field"))?;
+
+            let r#type = DescriptorType::from_value(&r#type, ctx.as_context())?;
+            let link_count = LinkCount::from_value(&link_count, ctx.as_context())?;
+            let size = Filesize::from_value(&size, ctx.as_context())?;
+            let data_access_timestamp =
+                Option::<Datetime>::from_value(&data_access_timestamp, ctx.as_context())?;
+            let data_modification_timestamp =
+                Option::<Datetime>::from_value(&data_modification_timestamp, ctx.as_context())?;
+            let status_change_timestamp =
+                Option::<Datetime>::from_value(&status_change_timestamp, ctx.as_context())?;
+
+            Ok(DescriptorStat {
+                r#type,
+                link_count,
+                size,
+                data_access_timestamp,
+                data_modification_timestamp,
+                status_change_timestamp,
+            })
+        } else {
+            bail!("Expected Record value")
+        }
+    }
+
+    fn into_value(self, #[allow(unused)] mut ctx: impl AsContextMut) -> Result<Value> {
+        let record = Record::new(
+            RecordType::new(
+                None,
+                [
+                    ("type", DescriptorType::ty()),
+                    ("link-count", LinkCount::ty()),
+                    ("size", Filesize::ty()),
+                    (
+                        "data-access-timestamp",
+                        ValueType::Option(OptionType::new(Datetime::ty())),
+                    ),
+                    (
+                        "data-modification-timestamp",
+                        ValueType::Option(OptionType::new(Datetime::ty())),
+                    ),
+                    (
+                        "status-change-timestamp",
+                        ValueType::Option(OptionType::new(Datetime::ty())),
+                    ),
+                ],
+            )
+            .unwrap(),
+            [
+                ("type", self.r#type.into_value(ctx.as_context_mut())?),
+                (
+                    "link-count",
+                    self.link_count.into_value(ctx.as_context_mut())?,
+                ),
+                ("size", self.size.into_value(ctx.as_context_mut())?),
+                (
+                    "data-access-timestamp",
+                    self.data_access_timestamp
+                        .into_value(ctx.as_context_mut())?,
+                ),
+                (
+                    "data-modification-timestamp",
+                    self.data_modification_timestamp
+                        .into_value(ctx.as_context_mut())?,
+                ),
+                (
+                    "status-change-timestamp",
+                    self.status_change_timestamp
+                        .into_value(ctx.as_context_mut())?,
+                ),
+            ],
+        )?;
+        Ok(Value::Record(record))
+    }
+}
+
+impl UnaryComponentType for DescriptorStat {}
+
+bitflags::bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct PathFlags: u32 {
+        const SYMLINK_FOLLOW = 1 << 0;
+    }
+}
+
+impl ComponentType for PathFlags {
+    fn ty() -> ValueType {
+        ValueType::Flags(FlagsType::new(None, ["symlink-follow"]).unwrap())
+    }
+
+    fn from_value(value: &Value, #[allow(unused)] ctx: impl AsContext) -> Result<Self> {
+        if let Value::Flags(flags_val) = value {
+            let mut result = PathFlags::empty();
+            let ty = flags_val.ty();
+            let count = ty.names().len();
+            for i in 0..count {
+                if flags_val.get_index(i) {
+                    result |= PathFlags::from_bits_truncate(1 << i);
+                }
+            }
+            Ok(result)
+        } else {
+            bail!("Expected Flags value")
+        }
+    }
+
+    fn into_value(self, #[allow(unused)] mut ctx: impl AsContextMut) -> Result<Value> {
+        let flags_type = FlagsType::new(None, ["symlink-follow"]).unwrap();
+
+        let mut flags_val = Flags::new(flags_type);
+        for i in 0..1 {
+            if self.bits() & (1 << i) != 0 {
+                flags_val.set_index(i, true);
+            }
+        }
+        Ok(Value::Flags(flags_val))
+    }
+}
+
+impl UnaryComponentType for PathFlags {}
+
+bitflags::bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct OpenFlags: u32 {
+        const CREATE = 1 << 0;
+        const DIRECTORY = 1 << 1;
+        const EXCLUSIVE = 1 << 2;
+        const TRUNCATE = 1 << 3;
+    }
+}
+
+impl ComponentType for OpenFlags {
+    fn ty() -> ValueType {
+        ValueType::Flags(
+            FlagsType::new(None, ["create", "directory", "exclusive", "truncate"]).unwrap(),
+        )
+    }
+
+    fn from_value(value: &Value, #[allow(unused)] ctx: impl AsContext) -> Result<Self> {
+        if let Value::Flags(flags_val) = value {
+            let mut result = OpenFlags::empty();
+            let ty = flags_val.ty();
+            let count = ty.names().len();
+            for i in 0..count {
+                if flags_val.get_index(i) {
+                    result |= OpenFlags::from_bits_truncate(1 << i);
+                }
+            }
+            Ok(result)
+        } else {
+            bail!("Expected Flags value")
+        }
+    }
+
+    fn into_value(self, #[allow(unused)] mut ctx: impl AsContextMut) -> Result<Value> {
+        let flags_type =
+            FlagsType::new(None, ["create", "directory", "exclusive", "truncate"]).unwrap();
+
+        let mut flags_val = Flags::new(flags_type);
+        for i in 0..4 {
+            if self.bits() & (1 << i) != 0 {
+                flags_val.set_index(i, true);
+            }
+        }
+        Ok(Value::Flags(flags_val))
+    }
+}
+
+impl UnaryComponentType for OpenFlags {}
+
+#[derive(Debug, Clone)]
+pub struct MetadataHashValue {
+    pub lower: u64,
+    pub upper: u64,
+}
+
+impl ComponentType for MetadataHashValue {
+    fn ty() -> ValueType {
+        ValueType::Record(
+            RecordType::new(None, [("lower", ValueType::U64), ("upper", ValueType::U64)]).unwrap(),
+        )
+    }
+
+    fn from_value(value: &Value, #[allow(unused)] ctx: impl AsContext) -> Result<Self> {
+        if let Value::Record(record) = value {
+            let lower = record
+                .field("lower")
+                .ok_or_else(|| anyhow!("Missing 'lower' field"))?;
+            let upper = record
+                .field("upper")
+                .ok_or_else(|| anyhow!("Missing 'upper' field"))?;
+
+            let lower = if let Value::U64(x) = lower {
+                x
+            } else {
+                bail!("Expected u64")
+            };
+            let upper = if let Value::U64(x) = upper {
+                x
+            } else {
+                bail!("Expected u64")
+            };
+
+            Ok(MetadataHashValue { lower, upper })
+        } else {
+            bail!("Expected Record value")
+        }
+    }
+
+    fn into_value(self, #[allow(unused)] mut ctx: impl AsContextMut) -> Result<Value> {
+        let record = Record::new(
+            RecordType::new(None, [("lower", ValueType::U64), ("upper", ValueType::U64)]).unwrap(),
+            [
+                ("lower", Value::U64(self.lower)),
+                ("upper", Value::U64(self.upper)),
+            ],
+        )?;
+        Ok(Value::Record(record))
+    }
+}
+
+impl UnaryComponentType for MetadataHashValue {}
+
 // ========== Host Imports ==========
 
 /// Host trait for interface: wasi:io/poll@0.2.6
@@ -640,6 +1377,49 @@ pub trait MonotonicClockHost {
 /// Host trait for interface: wasi:clocks/wall-clock@0.2.6
 pub trait WallClockHost {
     fn now(&mut self) -> anyhow::Result<Datetime>;
+}
+
+/// Host trait for interface: wasi:filesystem/types@0.2.6
+pub trait TypesHost {
+    fn descriptor_read_via_stream(
+        &mut self,
+        self_: crate::WasiP2DescriptorResource,
+        offset: Filesize,
+    ) -> anyhow::Result<Result<crate::WasiP2InputStreamResource, ErrorCode>>;
+    fn descriptor_write_via_stream(
+        &mut self,
+        self_: crate::WasiP2DescriptorResource,
+        offset: Filesize,
+    ) -> anyhow::Result<Result<crate::WasiP2OutputStreamResource, ErrorCode>>;
+    fn descriptor_append_via_stream(
+        &mut self,
+        self_: crate::WasiP2DescriptorResource,
+    ) -> anyhow::Result<Result<crate::WasiP2OutputStreamResource, ErrorCode>>;
+    fn descriptor_get_flags(
+        &mut self,
+        self_: crate::WasiP2DescriptorResource,
+    ) -> anyhow::Result<Result<DescriptorFlags, ErrorCode>>;
+    fn descriptor_stat(
+        &mut self,
+        self_: crate::WasiP2DescriptorResource,
+    ) -> anyhow::Result<Result<DescriptorStat, ErrorCode>>;
+    fn descriptor_open_at(
+        &mut self,
+        self_: crate::WasiP2DescriptorResource,
+        path_flags: PathFlags,
+        path: String,
+        open_flags: OpenFlags,
+        flags: DescriptorFlags,
+    ) -> anyhow::Result<Result<crate::WasiP2DescriptorResource, ErrorCode>>;
+    fn descriptor_metadata_hash(
+        &mut self,
+        self_: crate::WasiP2DescriptorResource,
+    ) -> anyhow::Result<Result<MetadataHashValue, ErrorCode>>;
+}
+
+/// Host trait for interface: wasi:filesystem/preopens@0.2.6
+pub trait PreopensHost {
+    fn get_directories(&mut self) -> anyhow::Result<Vec<(crate::WasiP2DescriptorResource, String)>>;
 }
 
 pub mod imports {
@@ -1247,6 +2027,244 @@ pub mod imports {
                 ),
             )
             .context("Failed to define now function")?;
+
+        Ok(())
+    }
+
+    // NOTE: This interface contains resources which require manual
+    // implementation. See the generated resource type documentation
+    // for the correct registration pattern.
+    //
+    // The generated trait below will not compile correctly for resource
+    // methods. Use the manual registration pattern shown in the
+    // resource type documentation instead.
+    pub fn register_types_host<T: TypesHost + 'static, E: backend::WasmEngine>(
+        linker: &mut Linker,
+        store: &mut Store<T, E>,
+    ) -> Result<()> {
+        let host_interface = linker
+            .define_instance("wasi:filesystem/types@0.2.6".try_into().unwrap())
+            .context("Failed to define host interface")?;
+
+        // Register resource: descriptor
+        host_interface
+            .define_resource("descriptor", crate::WasiP2DescriptorResource::resource_type())
+            .context("Failed to define resource descriptor")?;
+
+        host_interface
+            .define_func(
+                "[method]descriptor.read-via-stream",
+                Func::new(
+                    &mut *store,
+                    FuncType::new(
+                        [
+                            ValueType::Borrow(crate::WasiP2DescriptorResource::resource_type()),
+                            Filesize::ty(),
+                        ],
+                        [ValueType::Result(ResultType::new(
+                            Some(ValueType::Own(crate::WasiP2InputStreamResource::resource_type())),
+                            Some(ErrorCode::ty()),
+                        ))],
+                    ),
+                    |mut ctx, params, results| {
+                        let self_ = crate::WasiP2DescriptorResource::from_value(&params[0], ctx.as_context())?;
+                        let offset = Filesize::from_value(&params[1], ctx.as_context())?;
+                        let result = ctx.data_mut().descriptor_read_via_stream(self_, offset)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define [method]descriptor.read-via-stream function")?;
+
+        host_interface
+            .define_func(
+                "[method]descriptor.write-via-stream",
+                Func::new(
+                    &mut *store,
+                    FuncType::new(
+                        [
+                            ValueType::Borrow(crate::WasiP2DescriptorResource::resource_type()),
+                            Filesize::ty(),
+                        ],
+                        [ValueType::Result(ResultType::new(
+                            Some(ValueType::Own(crate::WasiP2OutputStreamResource::resource_type())),
+                            Some(ErrorCode::ty()),
+                        ))],
+                    ),
+                    |mut ctx, params, results| {
+                        let self_ = crate::WasiP2DescriptorResource::from_value(&params[0], ctx.as_context())?;
+                        let offset = Filesize::from_value(&params[1], ctx.as_context())?;
+                        let result = ctx.data_mut().descriptor_write_via_stream(self_, offset)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define [method]descriptor.write-via-stream function")?;
+
+        host_interface
+            .define_func(
+                "[method]descriptor.append-via-stream",
+                Func::new(
+                    &mut *store,
+                    FuncType::new(
+                        [ValueType::Borrow(crate::WasiP2DescriptorResource::resource_type())],
+                        [ValueType::Result(ResultType::new(
+                            Some(ValueType::Own(crate::WasiP2OutputStreamResource::resource_type())),
+                            Some(ErrorCode::ty()),
+                        ))],
+                    ),
+                    |mut ctx, params, results| {
+                        let self_ = crate::WasiP2DescriptorResource::from_value(&params[0], ctx.as_context())?;
+                        let result = ctx.data_mut().descriptor_append_via_stream(self_)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define [method]descriptor.append-via-stream function")?;
+
+        host_interface
+            .define_func(
+                "[method]descriptor.get-flags",
+                Func::new(
+                    &mut *store,
+                    FuncType::new(
+                        [ValueType::Borrow(crate::WasiP2DescriptorResource::resource_type())],
+                        [ValueType::Result(ResultType::new(
+                            Some(DescriptorFlags::ty()),
+                            Some(ErrorCode::ty()),
+                        ))],
+                    ),
+                    |mut ctx, params, results| {
+                        let self_ = crate::WasiP2DescriptorResource::from_value(&params[0], ctx.as_context())?;
+                        let result = ctx.data_mut().descriptor_get_flags(self_)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define [method]descriptor.get-flags function")?;
+
+        host_interface
+            .define_func(
+                "[method]descriptor.stat",
+                Func::new(
+                    &mut *store,
+                    FuncType::new(
+                        [ValueType::Borrow(crate::WasiP2DescriptorResource::resource_type())],
+                        [ValueType::Result(ResultType::new(
+                            Some(DescriptorStat::ty()),
+                            Some(ErrorCode::ty()),
+                        ))],
+                    ),
+                    |mut ctx, params, results| {
+                        let self_ = crate::WasiP2DescriptorResource::from_value(&params[0], ctx.as_context())?;
+                        let result = ctx.data_mut().descriptor_stat(self_)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define [method]descriptor.stat function")?;
+
+        host_interface
+            .define_func(
+                "[method]descriptor.open-at",
+                Func::new(
+                    &mut *store,
+                    FuncType::new(
+                        [
+                            ValueType::Borrow(crate::WasiP2DescriptorResource::resource_type()),
+                            PathFlags::ty(),
+                            ValueType::String,
+                            OpenFlags::ty(),
+                            DescriptorFlags::ty(),
+                        ],
+                        [ValueType::Result(ResultType::new(
+                            Some(ValueType::Own(crate::WasiP2DescriptorResource::resource_type())),
+                            Some(ErrorCode::ty()),
+                        ))],
+                    ),
+                    |mut ctx, params, results| {
+                        let self_ = crate::WasiP2DescriptorResource::from_value(&params[0], ctx.as_context())?;
+                        let path_flags = PathFlags::from_value(&params[1], ctx.as_context())?;
+                        let path = if let Value::String(s) = &params[2] {
+                            s.to_string()
+                        } else {
+                            bail!("Expected string")
+                        };
+                        let open_flags = OpenFlags::from_value(&params[3], ctx.as_context())?;
+                        let flags = DescriptorFlags::from_value(&params[4], ctx.as_context())?;
+                        let result = ctx
+                            .data_mut()
+                            .descriptor_open_at(self_, path_flags, path, open_flags, flags)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define [method]descriptor.open-at function")?;
+
+        host_interface
+            .define_func(
+                "[method]descriptor.metadata-hash",
+                Func::new(
+                    &mut *store,
+                    FuncType::new(
+                        [ValueType::Borrow(crate::WasiP2DescriptorResource::resource_type())],
+                        [ValueType::Result(ResultType::new(
+                            Some(MetadataHashValue::ty()),
+                            Some(ErrorCode::ty()),
+                        ))],
+                    ),
+                    |mut ctx, params, results| {
+                        let self_ = crate::WasiP2DescriptorResource::from_value(&params[0], ctx.as_context())?;
+                        let result = ctx.data_mut().descriptor_metadata_hash(self_)?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define [method]descriptor.metadata-hash function")?;
+
+        Ok(())
+    }
+
+    pub fn register_preopens_host<T: PreopensHost + 'static, E: backend::WasmEngine>(
+        linker: &mut Linker,
+        store: &mut Store<T, E>,
+    ) -> Result<()> {
+        let host_interface = linker
+            .define_instance("wasi:filesystem/preopens@0.2.6".try_into().unwrap())
+            .context("Failed to define host interface")?;
+
+        host_interface
+            .define_func(
+                "get-directories",
+                Func::new(
+                    &mut *store,
+                    FuncType::new(
+                        [],
+                        [ValueType::List(ListType::new(ValueType::Tuple(
+                            TupleType::new(
+                                None,
+                                [
+                                    ValueType::Own(crate::WasiP2DescriptorResource::resource_type()),
+                                    ValueType::String,
+                                ],
+                            ),
+                        )))],
+                    ),
+                    |mut ctx, params, results| {
+                        let result = ctx.data_mut().get_directories()?;
+                        results[0] = result.into_value(ctx.as_context_mut())?;
+                        Ok(())
+                    },
+                ),
+            )
+            .context("Failed to define get-directories function")?;
 
         Ok(())
     }

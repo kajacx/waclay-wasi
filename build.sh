@@ -14,6 +14,7 @@ rustfmt ./src/bindings.rs
 # sed -i '9i use crate::ResourceConvert;' ./src/bindings.rs;
 
 # Manual fixes round 2: Custom resources
+sed -i 's/\bDescriptor\b/crate::WasiP2DescriptorResource/g' ./src/bindings.rs
 sed -i 's/\bError\b/crate::WasiP2ErrorResource/g' ./src/bindings.rs
 sed -i 's/\bInputStream\b/crate::WasiP2InputStreamResource/g' ./src/bindings.rs
 sed -i 's/\bOutputStream\b/crate::WasiP2OutputStreamResource/g' ./src/bindings.rs

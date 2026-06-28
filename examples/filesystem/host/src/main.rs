@@ -36,6 +36,9 @@ pub fn main() {
     let component = Component::new(&engine, WASM).unwrap();
     let instance = linker.instantiate(&mut store, &component).unwrap();
 
+    let test_filesystem =
+        bindings::exports_funcs::get_test_filesystem(&instance, &mut store).unwrap();
+
     // Filesystem is in "empty impl" state only
-    bindings::exports_funcs::get_test_filesystem(&instance, &mut store).unwrap();
+    test_filesystem.call(&mut store, ()).unwrap();
 }

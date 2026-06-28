@@ -5,6 +5,7 @@ mod error;
 mod exit;
 mod monotonic_clock;
 mod poll;
+mod preopens;
 mod random;
 mod stderr;
 mod stdin;
@@ -15,6 +16,7 @@ mod terminal_output;
 mod terminal_stderr;
 mod terminal_stdin;
 mod terminal_stdout;
+mod types;
 mod wall_clock;
 
 pub use monotonic_clock::*;
@@ -29,6 +31,7 @@ pub fn add_to_linker<S: AsWasiP2Ctx + 'static, E: wasm_runtime_layer::backend::W
     bindings::imports::register_error_host(linker, store)?;
     bindings::imports::register_exit_host(linker, store)?;
     bindings::imports::register_poll_host(linker, store)?;
+    bindings::imports::register_preopens_host(linker, store)?;
     bindings::imports::register_random_host(linker, store)?;
     bindings::imports::register_stdin_host(linker, store)?;
     bindings::imports::register_stdout_host(linker, store)?;
@@ -39,6 +42,7 @@ pub fn add_to_linker<S: AsWasiP2Ctx + 'static, E: wasm_runtime_layer::backend::W
     bindings::imports::register_terminal_stdin_host(linker, store)?;
     bindings::imports::register_terminal_stdout_host(linker, store)?;
     bindings::imports::register_terminal_stderr_host(linker, store)?;
+    bindings::imports::register_types_host(linker, store)?;
     bindings::imports::register_monotonic_clock_host(linker, store)?;
     bindings::imports::register_wall_clock_host(linker, store)?;
     Ok(())

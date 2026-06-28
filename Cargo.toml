@@ -7,3 +7,4 @@ edition = "2024"
 waclay = { path = "../waclay/crates/waclay" }
 simple_rng = { version = "0.4", default-features = false }
 getrandom = { version = "0.4" }
+bitflags = { version = "2" }
